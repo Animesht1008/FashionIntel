@@ -22,7 +22,18 @@ const PORT = process.env.PORT || 3000
 // ── Middleware ────────────────────────────────────────────────
 app.use(cors())
 app.use(express.json())
-app.use(express.static(path.join(__dirname, '../public')))
+// Canonicalize: redirect any lingering *.html URL (old links,
+// bookmarks, previously indexed pages) to the clean equivalent.
+app.get(/^\/(.+)\.html$/, (req, res) => {
+  const name = req.params[0]
+  const qs = req.url.includes('?') ? '?' + req.url.split('?')[1] : ''
+  res.redirect(301, name === 'index' ? `/${qs}` : `/${name}${qs}`)
+})
+
+// Serve static assets (css, js, images) normally, but resolve
+// extension-less paths like /dashboard to /dashboard.html so the
+// browser URL bar never shows ".html".
+app.use(express.static(path.join(__dirname, '../public'), { extensions: ['html'] }))
 
 // Request logger
 app.use((req, res, next) => {

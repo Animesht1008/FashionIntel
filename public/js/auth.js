@@ -24,7 +24,7 @@ export function isLoggedIn() {
 // Redirect to login if not authenticated
 export function requireAuth() {
   if (!isLoggedIn()) {
-    window.location.href = '/login.html'
+    window.location.href = '/login'
     return false
   }
   return true
@@ -33,7 +33,7 @@ export function requireAuth() {
 // Redirect to dashboard if already authenticated
 export function redirectIfAuth() {
   if (isLoggedIn()) {
-    window.location.href = '/dashboard.html'
+    window.location.href = '/dashboard'
     return true
   }
   return false

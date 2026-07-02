@@ -100,7 +100,7 @@ window.handleLogin = async function() {
   try{
     const {token,user}=await api.login({email,password})
     saveSession(token,user)
-    window.location.href='/dashboard.html'
+    window.location.href='/dashboard'
   }catch(err){showError(err.message);setLoading('btn-login',false)}
 }
 window.handleSignup = async function() {
@@ -113,7 +113,7 @@ window.handleSignup = async function() {
   try{
     const {token,user}=await api.signup({name,email,password})
     saveSession(token,user)
-    window.location.href='/dashboard.html'
+    window.location.href='/dashboard'
   }catch(err){showError(err.message);setLoading('btn-signup',false)}
 }
 document.addEventListener('keydown', e=>{

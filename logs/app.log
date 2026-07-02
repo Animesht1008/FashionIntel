@@ -486,3 +486,65 @@
 {"level":"debug","message":"GET /api/articles","timestamp":"2026-07-02T13:07:38.390Z"}
 {"level":"debug","message":"GET /favicon.ico","timestamp":"2026-07-02T13:07:38.452Z"}
 {"level":"debug","message":"GET /api/competitors/stats","timestamp":"2026-07-02T13:07:40.174Z"}
+{"level":"info","message":"Fashion News Agent running on http://localhost:3000","timestamp":"2026-07-02T13:21:10.869Z"}
+{"level":"info","message":"Scheduler started","schedule":"0 */6 * * *","timestamp":"2026-07-02T13:21:10.872Z"}
+{"level":"info","message":"Scheduled agent run triggered","schedule":"0 */6 * * *","timestamp":"2026-07-02T18:30:00.457Z"}
+{"level":"info","message":"Agent run started","timestamp":"2026-07-02T18:30:00.465Z","triggeredBy":"scheduler"}
+{"competitors":49,"level":"info","message":"Loaded config","timestamp":"2026-07-02T18:30:01.972Z","topics":7}
+{"level":"error","message":"GNews API error","query":"Louis Vuitton OR Gucci OR Prada","status":403,"timestamp":"2026-07-02T18:30:04.842Z"}
+{"level":"error","message":"GNews API error","query":"Zara OR HandM OR Shein","status":403,"timestamp":"2026-07-02T18:30:06.603Z"}
+{"level":"error","message":"GNews API error","query":"fashion spending OR retail sales OR consumer trends","status":403,"timestamp":"2026-07-02T18:30:08.380Z"}
+{"level":"error","message":"GNews API error","query":"stock prices","status":403,"timestamp":"2026-07-02T18:30:10.285Z"}
+{"level":"error","message":"GNews API error","query":"Nike OR Adidas OR Lululemon","status":403,"timestamp":"2026-07-02T18:30:12.082Z"}
+{"level":"error","message":"GNews API error","query":"Fabindia OR Manyavar OR Nykaa Fashion","status":403,"timestamp":"2026-07-02T18:30:13.843Z"}
+{"level":"error","message":"GNews API error","query":"fashion sale OR end of season sale OR Black Friday fashion","status":403,"timestamp":"2026-07-02T18:30:15.714Z"}
+{"level":"error","message":"GNews API error","query":"HandM OR HandM sales OR HandM sustainability","status":403,"timestamp":"2026-07-02T18:30:17.480Z"}
+{"level":"error","message":"GNews API error","query":"Louis Vuitton OR LV OR LVMH fashion","status":403,"timestamp":"2026-07-02T18:30:19.242Z"}
+{"level":"error","message":"GNews API error","query":"Shein OR Shein controversy OR Shein expansion","status":403,"timestamp":"2026-07-02T18:30:20.999Z"}
+{"level":"error","message":"GNews API error","query":"Armani","status":403,"timestamp":"2026-07-02T18:30:22.765Z"}
+{"level":"error","message":"GNews API error","query":"Balenciaga","status":403,"timestamp":"2026-07-02T18:30:24.517Z"}
+{"level":"error","message":"GNews API error","query":"Burberry","status":403,"timestamp":"2026-07-02T18:30:26.281Z"}
+{"level":"error","message":"GNews API error","query":"Bvlgari","status":403,"timestamp":"2026-07-02T18:30:28.049Z"}
+{"level":"error","message":"GNews API error","query":"Zara OR Zara collection OR Inditex","status":403,"timestamp":"2026-07-02T18:30:29.820Z"}
+{"level":"error","message":"GNews API error","query":"Gucci OR Gucci campaign OR Gucci revenue","status":403,"timestamp":"2026-07-02T18:30:31.715Z"}
+{"level":"error","message":"GNews API error","query":"Lululemon OR Lululemon earnings OR Lululemon collaboration","status":403,"timestamp":"2026-07-02T18:30:33.483Z"}
+{"level":"error","message":"GNews API error","query":"BoAt audio","status":403,"timestamp":"2026-07-02T18:30:35.821Z"}
+{"level":"error","message":"GNews API error","query":"One8 Apparel and Footwear OR One8 Select OR One8 Commune","status":403,"timestamp":"2026-07-02T18:30:37.647Z"}
+{"level":"error","message":"GNews API error","query":"Chanel","status":403,"timestamp":"2026-07-02T18:30:39.562Z"}
+{"level":"error","message":"GNews API error","query":"Nike OR Nike sales OR Nike launch","status":403,"timestamp":"2026-07-02T18:30:41.495Z"}
+{"level":"error","message":"GNews API error","query":"Dior","status":403,"timestamp":"2026-07-02T18:30:43.397Z"}
+{"level":"error","message":"GNews API error","query":"Dolce and Gabbana","status":403,"timestamp":"2026-07-02T18:30:45.315Z"}
+{"level":"error","message":"GNews API error","query":"Herm s","status":403,"timestamp":"2026-07-02T18:30:47.240Z"}
+{"level":"error","message":"GNews API error","query":"Adidas OR Adidas collaboration OR Adidas revenue","status":403,"timestamp":"2026-07-02T18:30:49.156Z"}
+{"level":"error","message":"GNews API error","query":"PUMA SE OR PUMA AG","status":403,"timestamp":"2026-07-02T18:30:51.045Z"}
+{"level":"error","message":"GNews API error","query":"Prada","status":403,"timestamp":"2026-07-02T18:30:52.841Z"}
+{"level":"error","message":"GNews API error","query":"Asics","status":403,"timestamp":"2026-07-02T18:30:54.631Z"}
+{"level":"error","message":"GNews API error","query":"Asos","status":403,"timestamp":"2026-07-02T18:30:56.516Z"}
+{"level":"error","message":"GNews API error","query":"Bata","status":403,"timestamp":"2026-07-02T18:30:58.448Z"}
+{"level":"error","message":"GNews API error","query":"Calvin Klein","status":403,"timestamp":"2026-07-02T18:31:00.365Z"}
+{"level":"error","message":"GNews API error","query":"Charles and Keith","status":403,"timestamp":"2026-07-02T18:31:02.164Z"}
+{"level":"error","message":"GNews API error","query":"Fabindia","status":403,"timestamp":"2026-07-02T18:31:04.041Z"}
+{"level":"error","message":"GNews API error","query":"Fossil","status":403,"timestamp":"2026-07-02T18:31:05.959Z"}
+{"level":"error","message":"GNews API error","query":"Jockey","status":403,"timestamp":"2026-07-02T18:31:07.888Z"}
+{"level":"error","message":"GNews API error","query":"Levi s","status":403,"timestamp":"2026-07-02T18:31:09.708Z"}
+{"level":"error","message":"GNews API error","query":"Lee","status":403,"timestamp":"2026-07-02T18:31:11.563Z"}
+{"level":"error","message":"GNews API error","query":"Manyavar","status":403,"timestamp":"2026-07-02T18:31:13.476Z"}
+{"level":"error","message":"GNews API error","query":"Myntra","status":403,"timestamp":"2026-07-02T18:31:15.402Z"}
+{"level":"error","message":"GNews API error","query":"New Balance","status":403,"timestamp":"2026-07-02T18:31:17.186Z"}
+{"level":"error","message":"GNews API error","query":"Pantaloons","status":403,"timestamp":"2026-07-02T18:31:18.966Z"}
+{"level":"error","message":"GNews API error","query":"Pepe Jeans","status":403,"timestamp":"2026-07-02T18:31:20.743Z"}
+{"level":"error","message":"GNews API error","query":"Peter England","status":403,"timestamp":"2026-07-02T18:31:22.555Z"}
+{"level":"error","message":"GNews API error","query":"Puma","status":403,"timestamp":"2026-07-02T18:31:24.335Z"}
+{"level":"error","message":"GNews API error","query":"Raymond","status":403,"timestamp":"2026-07-02T18:31:26.117Z"}
+{"level":"error","message":"GNews API error","query":"Reebok","status":403,"timestamp":"2026-07-02T18:31:28.036Z"}
+{"level":"error","message":"GNews API error","query":"Tom Ford","status":403,"timestamp":"2026-07-02T18:31:29.804Z"}
+{"level":"error","message":"GNews API error","query":"Tommy Hilfiger","status":403,"timestamp":"2026-07-02T18:31:31.944Z"}
+{"level":"error","message":"GNews API error","query":"US Polo Assn","status":403,"timestamp":"2026-07-02T18:31:34.885Z"}
+{"level":"error","message":"GNews API error","query":"Van Heusen","status":403,"timestamp":"2026-07-02T18:31:36.672Z"}
+{"level":"error","message":"GNews API error","query":"Victoria S Secret","status":403,"timestamp":"2026-07-02T18:31:38.452Z"}
+{"level":"error","message":"GNews API error","query":"Woodland","status":403,"timestamp":"2026-07-02T18:31:40.234Z"}
+{"level":"error","message":"GNews API error","query":"Allen Solly","status":403,"timestamp":"2026-07-02T18:31:42.027Z"}
+{"level":"error","message":"GNews API error","query":"Aurelia","status":403,"timestamp":"2026-07-02T18:31:43.864Z"}
+{"level":"error","message":"GNews API error","query":"Nykaa Fashion","status":403,"timestamp":"2026-07-02T18:31:45.795Z"}
+{"level":"error","message":"GNews API error","query":"Sabyasachi","status":403,"timestamp":"2026-07-02T18:31:47.565Z"}
+{"level":"info","message":"Agent run completed","timestamp":"2026-07-02T18:31:47.896Z","totalFetched":0,"totalFiltered":0,"totalLinked":0,"totalSaved":0}

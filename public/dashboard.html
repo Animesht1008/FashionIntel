@@ -362,7 +362,7 @@ async function renderBrandPulse() {
       const candidates = getLogoCandidates(c.name)
       const initial = c.name.charAt(0).toUpperCase()
       return `
-        <div class="brand-row" style="cursor:pointer" onclick="window.location.href='/brand.html?q=${encodeURIComponent(c.name)}'">
+        <div class="brand-row" style="cursor:pointer" onclick="window.location.href='/brand?q=${encodeURIComponent(c.name)}'">
           <div style="display:flex;align-items:center;gap:8px;min-width:110px">
             <img src="${candidates[0]}" data-fallbacks='${JSON.stringify(candidates.slice(1))}' alt="" style="width:20px;height:20px;border-radius:4px;object-fit:contain;background:var(--bg-soft);flex-shrink:0"
               onerror="window.__logoErr(this,'${initial}')" />
@@ -405,7 +405,7 @@ function renderTrendTags(articles) {
   }
   const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,14)
   document.getElementById('trend-tags').innerHTML = top.map(([w]) =>
-    `<a class="trend-tag" href="/brand.html?q=${encodeURIComponent(w)}">${escHtml(w)}</a>`
+    `<a class="trend-tag" href="/brand?q=${encodeURIComponent(w)}">${escHtml(w)}</a>`
   ).join('')
 }
 

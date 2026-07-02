@@ -53,7 +53,7 @@ async function init() {
       const candidates = getLogoCandidates(b.name)
       const initial = b.name.charAt(0).toUpperCase()
       return `
-        <a href="/brand.html?q=${encodeURIComponent(b.name)}" style="text-decoration:none">
+        <a href="/brand?q=${encodeURIComponent(b.name)}" style="text-decoration:none">
           <div class="manager-card" style="padding:18px;text-align:center;transition:all .15s;cursor:pointer" onmouseover="this.style.borderColor='var(--ink)'" onmouseout="this.style.borderColor='var(--border)'">
             <div style="width:52px;height:52px;border-radius:50%;background:var(--bg-soft);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;color:var(--ink);margin:0 auto 10px;font-family:var(--font-display);overflow:hidden">
               <img src="${candidates[0]}" data-fallbacks='${JSON.stringify(candidates.slice(1))}' alt="" style="width:100%;height:100%;object-fit:contain;padding:8px"

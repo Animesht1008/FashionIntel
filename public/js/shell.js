@@ -15,7 +15,7 @@ export function renderShell(activePage) {
       <!-- ── Top Nav ── -->
       <nav class="topnav">
         <!-- Brand -->
-        <a class="topnav-brand" href="/dashboard.html">Fashion<em>Intel</em></a>
+        <a class="topnav-brand" href="/dashboard">Fashion<em>Intel</em></a>
 
         <!-- Center Search -->
         <div class="topnav-search-center">
@@ -45,17 +45,17 @@ export function renderShell(activePage) {
                 <div class="profile-dropdown-name">${user?.name || 'User'}</div>
                 <div class="profile-dropdown-email">${user?.email || ''}</div>
               </div>
-              <a class="dropdown-link ${activePage==='dashboard'?'active':''}" href="/dashboard.html">
+              <a class="dropdown-link ${activePage==='dashboard'?'active':''}" href="/dashboard">
                 <span class="dropdown-link-icon">◈</span> Dashboard
               </a>
-              <a class="dropdown-link ${activePage==='settings'?'active':''}" href="/settings.html">
+              <a class="dropdown-link ${activePage==='settings'?'active':''}" href="/settings">
                 <span class="dropdown-link-icon">⊞</span> Manage Searches
               </a>
               ${!isProd ? `
-              <a class="dropdown-link ${activePage==='runs'?'active':''}" href="/runs.html">
+              <a class="dropdown-link ${activePage==='runs'?'active':''}" href="/runs">
                 <span class="dropdown-link-icon">⟳</span> Agent Runs
               </a>
-              <a class="dropdown-link ${activePage==='logs'?'active':''}" href="/logs.html">
+              <a class="dropdown-link ${activePage==='logs'?'active':''}" href="/logs">
                 <span class="dropdown-link-icon">≡</span> Activity Log
               </a>` : ''}
               <div class="dropdown-divider"></div>
@@ -80,24 +80,24 @@ export function renderShell(activePage) {
           <div class="footer-nav-grid">
             <div class="footer-nav-section">
               <div class="footer-nav-title">Categories</div>
-              <a class="footer-nav-link" onclick="window.location.href='/category.html?cat=executive'">Executive</a>
-              <a class="footer-nav-link" onclick="window.location.href='/category.html?cat=fashion'">Fashion</a>
-              <a class="footer-nav-link" onclick="window.location.href='/category.html?cat=retail'">Retail</a>
-              <a class="footer-nav-link" onclick="window.location.href='/category.html?cat=business'">Business</a>
+              <a class="footer-nav-link" onclick="window.location.href='/category?cat=executive'">Executive</a>
+              <a class="footer-nav-link" onclick="window.location.href='/category?cat=fashion'">Fashion</a>
+              <a class="footer-nav-link" onclick="window.location.href='/category?cat=retail'">Retail</a>
+              <a class="footer-nav-link" onclick="window.location.href='/category?cat=business'">Business</a>
             </div>
             <div class="footer-nav-section">
               <div class="footer-nav-title">Explore</div>
-              <a class="footer-nav-link" onclick="window.location.href='/category.html?cat=culture'">Culture</a>
-              <a class="footer-nav-link" onclick="window.location.href='/category.html?cat=people'">People</a>
-              <a class="footer-nav-link" onclick="window.location.href='/category.html?cat=fairs'">Fairs</a>
-              <a class="footer-nav-link" onclick="window.location.href='/category.html?cat=statistics'">Statistics</a>
+              <a class="footer-nav-link" onclick="window.location.href='/category?cat=culture'">Culture</a>
+              <a class="footer-nav-link" onclick="window.location.href='/category?cat=people'">People</a>
+              <a class="footer-nav-link" onclick="window.location.href='/category?cat=fairs'">Fairs</a>
+              <a class="footer-nav-link" onclick="window.location.href='/category?cat=statistics'">Statistics</a>
             </div>
             <div class="footer-nav-section">
               <div class="footer-nav-title">More</div>
-              <a class="footer-nav-link" onclick="window.location.href='/category.html?cat=education'">Education</a>
-              <a class="footer-nav-link" onclick="window.location.href='/brands.html'">Brand Directory</a>
-              <a class="footer-nav-link" href="/dashboard.html">Dashboard</a>
-              <a class="footer-nav-link" href="/settings.html">Manage Searches</a>
+              <a class="footer-nav-link" onclick="window.location.href='/category?cat=education'">Education</a>
+              <a class="footer-nav-link" onclick="window.location.href='/brands'">Brand Directory</a>
+              <a class="footer-nav-link" href="/dashboard">Dashboard</a>
+              <a class="footer-nav-link" href="/settings">Manage Searches</a>
             </div>
           </div>
         </div>
@@ -120,7 +120,7 @@ export function renderShell(activePage) {
     }
   })
 
-  window.__logout = () => { clearSession(); window.location.href = '/login.html' }
+  window.__logout = () => { clearSession(); window.location.href = '/login' }
 
   // ── Logo fallback chain ──────────────────────────────────────
   // Clearbit's free Logo API shut down Dec 8, 2025. Logo <img> tags
@@ -166,7 +166,7 @@ export function renderShell(activePage) {
     const q = document.getElementById('global-search').value.trim()
     if (!q) return
     document.getElementById('search-results').classList.remove('show')
-    window.location.href = `/brand.html?q=${encodeURIComponent(q)}`
+    window.location.href = `/brand?q=${encodeURIComponent(q)}`
   }
 
   function renderSearchResults(q) {
@@ -200,7 +200,7 @@ export function renderShell(activePage) {
     if (catHits.length) {
       html += `<div class="search-result-section">Categories</div>`
       html += catHits.map(c => `
-        <a class="search-result-item" href="/category.html?cat=${c.toLowerCase()}">
+        <a class="search-result-item" href="/category?cat=${c.toLowerCase()}">
           <span style="font-size:1.1rem;width:44px;text-align:center">📂</span>
           <div>
             <div class="search-result-title">${c}</div>
@@ -212,7 +212,7 @@ export function renderShell(activePage) {
     if (brandHits.length) {
       html += `<div class="search-result-section">Brands</div>`
       html += brandHits.map(b => `
-        <a class="search-result-item" href="/brand.html?q=${encodeURIComponent(b)}">
+        <a class="search-result-item" href="/brand?q=${encodeURIComponent(b)}">
           <span style="font-size:1.1rem;width:44px;text-align:center">🏷️</span>
           <div>
             <div class="search-result-title">${b}</div>
@@ -238,7 +238,7 @@ export function renderShell(activePage) {
     if (!html) {
       // No local results → show "search web for brand" option
       html = `
-        <a class="search-result-item" href="/brand.html?q=${encodeURIComponent(q)}">
+        <a class="search-result-item" href="/brand?q=${encodeURIComponent(q)}">
           <span style="font-size:1.1rem;width:44px;text-align:center">🔍</span>
           <div>
             <div class="search-result-title">Search for "${q}"</div>
