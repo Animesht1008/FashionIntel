@@ -30,9 +30,6 @@ app.get(/^\/(.+)\.html$/, (req, res) => {
   res.redirect(301, name === 'index' ? `/${qs}` : `/${name}${qs}`)
 })
 
-// Serve static assets (css, js, images) normally, but resolve
-// extension-less paths like /dashboard to /dashboard.html so the
-// browser URL bar never shows ".html".
 app.use(express.static(path.join(__dirname, '../public'), { extensions: ['html'] }))
 
 // Request logger
