@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fashion Intel — Brand Profile</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<script type="module">
+import { renderShell } from '/js/shell.js'
+import { api }         from '/js/api.js'
+import { toast }        from '/js/toast.js'
+import { getBrandInfo, getLogoCandidates } from '/js/brandData.js'
+
+renderShell('')
+
+const TYPE_ICONS = {
+  product_launch:'🚀', campaign:'📢', discount:'🏷️',
+  earnings:'📊', acquisition:'🤝', trend:'📈',
+  controversy:'⚡', partnership:'🤲', regulation:'📋',
+  sustainability:'🌿', other:'📰'
+}
+
+const PLACEHOLDER_IMGS = [
+  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=70',
+  'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&q=70',
+  'https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&q=70',
+]
+
+// Social icon SVGs (inline, no external dependency)
+const ICONS = {
+  website: '🌐',
+  instagram: '📷',
+  facebook: '📘',
+}
+
+function escHtml(s='') { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+function dateStr(d) { return d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—' }
+function imgFor(a,i=0){ return a?.image_url || PLACEHOLDER_IMGS[i % PLACEHOLDER_IMGS.length] }
+
+const params = new URLSearchParams(window.location.search)
+const query = (params.get('q') || '').trim()
+
+document.getElementById('app-body').innerHTML = `
+  <div class="brand-page" id="brand-page-content">
+    <div style="text-align:center;padding:60px">
+      <div class="spinner" style="width:24px;height:24px;margin:0 auto 12px"></div>
+      <div style="color:var(--ink-faint);font-size:.85rem">Loading brand profile…</div>
+    </div>
+  </div>
+`
+
+async function init() {
+  if (!query) {
+    document.getElementById('brand-page-content').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">No search query</div>
+        <div class="empty-sub">Try searching for a brand name from the top bar.</div>
+      </div>`
+    return
+  }
+
+  try {
+    const ql = query.toLowerCase()
+
+    // Accurate stats (server-computed across ALL articles, not a
+    // capped/sorted page) — this is the same source the dashboard
+    // Brand Pulse widget uses, so percentages always match.
+    const allStats = await api.getCompetitorStats()
+
+    let brandStat = allStats.find(c => c.name.toLowerCase() === ql)
+      || allStats.find(c => c.name.toLowerCase().includes(ql) || ql.includes(c.name.toLowerCase()))
+
+    let articles = []
+    if (brandStat) {
+      // Server-side filter by competitor id — guarantees we get
+      // every tracked article for this brand, not just whatever
+      // happened to be in a client-side sliced list.
+      articles = await api.getArticles({ competitor: brandStat.id, limit: 200 })
+    } else {
+      // No exact competitor match — fall back to a broader text
+      // search across recent articles.
+      const broad = await api.getArticles({ limit: 300 })
+      articles = broad.filter(a =>
+        a.title?.toLowerCase().includes(ql) ||
+        a.ai_summary?.toLowerCase().includes(ql) ||
+        a.competitors?.name?.toLowerCase().includes(ql) ||
+        a.topics?.name?.toLowerCase().includes(ql)
+      )
+    }
+
+    articles.sort((a,b) => new Date(b.published_at||0) - new Date(a.published_at||0))
+
+    renderBrandProfile(brandStat, articles)
+
+  } catch (err) {
+    toast.error('Failed to load: ' + err.message)
+  }
+}
+
+function renderBrandProfile(brandStat, articles) {
+  const displayName = brandStat?.name || query
+  const info = getBrandInfo(displayName)
+  const category = brandStat?.category || info?.products || (articles[0]?.topics?.name) || 'Fashion Brand'
+  const logoCandidates = getLogoCandidates(displayName, info?.domain)
+  const initial = displayName.charAt(0).toUpperCase()
+
+  // Sentiment stats — sourced from the accurate backend aggregate
+  // when available (brandStat.stats), so this always matches the
+  // Brand Pulse widget on the dashboard.
+  const stats = brandStat?.stats || { pos:0, neg:0, neu:0, total: articles.length }
+  const total = stats.total || articles.length || 1
+  const posPct = Math.round(((stats.pos || 0)/total)*100)
+  const negPct = Math.round(((stats.neg || 0)/total)*100)
+
+  const typeCounts = {}
+  for (const a of articles) typeCounts[a.news_type] = (typeCounts[a.news_type]||0)+1
+  const topType = Object.entries(typeCounts).sort((a,b)=>b[1]-a[1])[0]
+
+  const socialLinks = info ? `
+    <div style="display:flex;gap:8px;margin-top:14px">
+      ${info.website   ? `<a href="${info.website}" target="_blank" rel="noopener" title="Website" style="width:34px;height:34px;border-radius:50%;background:var(--bg-soft);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;text-decoration:none;transition:all .15s" onmouseover="this.style.borderColor='var(--ink)'" onmouseout="this.style.borderColor='var(--border)'">${ICONS.website}</a>` : ''}
+      ${info.instagram ? `<a href="${info.instagram}" target="_blank" rel="noopener" title="Instagram" style="width:34px;height:34px;border-radius:50%;background:var(--bg-soft);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;text-decoration:none;transition:all .15s" onmouseover="this.style.borderColor='var(--ink)'" onmouseout="this.style.borderColor='var(--border)'">${ICONS.instagram}</a>` : ''}
+      ${info.facebook  ? `<a href="${info.facebook}" target="_blank" rel="noopener" title="Facebook" style="width:34px;height:34px;border-radius:50%;background:var(--bg-soft);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;text-decoration:none;transition:all .15s" onmouseover="this.style.borderColor='var(--ink)'" onmouseout="this.style.borderColor='var(--border)'">${ICONS.facebook}</a>` : ''}
+    </div>` : ''
+
+  document.getElementById('brand-page-content').innerHTML = `
+    <!-- Hero -->
+    <div class="brand-hero">
+      <div class="brand-logo-box" style="overflow:hidden">
+        <img src="${logoCandidates[0]}" data-fallbacks='${JSON.stringify(logoCandidates.slice(1))}' alt="" style="width:100%;height:100%;object-fit:contain;padding:10px"
+          onerror="window.__logoErr(this,'${initial}')" />
+      </div>
+      <div class="brand-hero-info">
+        <div class="brand-hero-name">${escHtml(displayName)}</div>
+        <div class="brand-hero-category">${escHtml(category)}</div>
+        <p class="brand-hero-summary">
+          ${articles.length
+            ? `Tracking ${articles.length} recent article${articles.length!==1?'s':''} about ${escHtml(displayName)}. ${
+                posPct >= 60 ? 'Overall sentiment is trending positive.' :
+                negPct >= 40 ? 'Overall sentiment is trending negative.' :
+                'Overall sentiment is mixed to neutral.'
+              }`
+            : info
+              ? info.description
+              : `No monitoring data yet for "${escHtml(displayName)}". Add it to Manage Searches to start tracking.`
+          }
+        </p>
+        ${socialLinks}
+      </div>
+    </div>
+
+    <!-- About section (Wikipedia-style profile) — always shown when
+         we have curated brand data, especially useful when there's
+         little or no tracked news yet -->
+    ${info ? `
+    <div class="insight-panel" style="margin-bottom:28px">
+      <div class="insight-panel-head">
+        <span class="insight-panel-title">About ${escHtml(displayName)}</span>
+      </div>
+      <div class="insight-panel-body">
+        <p style="font-size:.85rem;color:var(--ink-soft);line-height:1.65;margin-bottom:16px">${escHtml(info.description)}</p>
+        <div class="brand-meta-grid" style="margin-bottom:0">
+          <div class="brand-meta-card">
+            <div class="brand-meta-label">Founded</div>
+            <div class="brand-meta-value">${escHtml(info.founded)}</div>
+          </div>
+          <div class="brand-meta-card">
+            <div class="brand-meta-label">Headquarters</div>
+            <div class="brand-meta-value" style="font-size:.8rem">${escHtml(info.headquarters)}</div>
+          </div>
+          <div class="brand-meta-card">
+            <div class="brand-meta-label">Products</div>
+            <div class="brand-meta-value" style="font-size:.8rem">${escHtml(info.products)}</div>
+          </div>
+        </div>
+      </div>
+    </div>` : ''}
+
+    <!-- Stats -->
+    <div class="brand-meta-grid">
+      <div class="brand-meta-card">
+        <div class="brand-meta-label">Articles Tracked</div>
+        <div class="brand-meta-value">${articles.length}</div>
+      </div>
+      <div class="brand-meta-card">
+        <div class="brand-meta-label">Positive Sentiment</div>
+        <div class="brand-meta-value" style="color:var(--positive)">${posPct}%</div>
+      </div>
+      <div class="brand-meta-card">
+        <div class="brand-meta-label">Category</div>
+        <div class="brand-meta-value">${escHtml(category)}</div>
+      </div>
+      <div class="brand-meta-card">
+        <div class="brand-meta-label">Top Signal</div>
+        <div class="brand-meta-value">${topType ? (TYPE_ICONS[topType[0]]||'📰')+' '+topType[0].replace(/_/g,' ') : '—'}</div>
+      </div>
+      <div class="brand-meta-card">
+        <div class="brand-meta-label">Monitoring Status</div>
+        <div class="brand-meta-value" style="color:${brandStat?.is_active?'var(--positive)':'var(--ink-faint)'}">
+          ${brandStat ? (brandStat.is_active ? '● Active' : '○ Paused') : '— Not tracked'}
+        </div>
+      </div>
+    </div>
+
+    <!-- News feed -->
+    <div class="section-head">
+      <div class="section-title">Latest News — ${escHtml(displayName)}</div>
+      <span class="section-link">${articles.length} articles</span>
+    </div>
+
+    <div class="category-grid" id="brand-articles">
+      ${articles.length ? articles.map((a,i) => `
+        <a class="article-card" href="${a.url}" target="_blank" rel="noopener">
+          <div class="article-card-img-wrap">
+            <img class="article-card-img" src="${imgFor(a,i)}" alt=""
+              onerror="this.parentElement.innerHTML='<div class=article-card-img-placeholder>${TYPE_ICONS[a.news_type]||'📰'}</div>'" />
+          </div>
+          <div class="article-card-body">
+            <div class="article-card-tags">
+              <span class="tag tag-type">${TYPE_ICONS[a.news_type]||'📰'} ${(a.news_type||'other').replace(/_/g,' ')}</span>
+              <span class="tag tag-${a.sentiment||'neutral'}">${a.sentiment||'neutral'}</span>
+            </div>
+            <div class="article-card-title">${escHtml(a.title)}</div>
+            ${a.ai_summary ? `<div class="article-card-summary">${escHtml(a.ai_summary)}</div>` : ''}
+            <div class="article-card-footer">
+              <span class="article-card-source">${escHtml(a.source_name||'Unknown')} · ${dateStr(a.published_at)}</span>
+            </div>
+          </div>
+        </a>`).join('')
+      : `<div style="grid-column:1/-1"><div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <div class="empty-title">No articles found for ${escHtml(displayName)}</div>
+          <div class="empty-sub">Add this brand in Manage Searches, then run the agent to start tracking.</div>
+        </div></div>`
+      }
+    </div>
+  `
+}
+
+init()
+</script>
+</body>
+</html>

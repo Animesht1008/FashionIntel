@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fashion Intel — Category</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<script type="module">
+import { renderShell } from '/js/shell.js'
+import { api }         from '/js/api.js'
+import { toast }        from '/js/toast.js'
+
+renderShell('')
+
+const TYPE_ICONS = {
+  product_launch:'🚀', campaign:'📢', discount:'🏷️',
+  earnings:'📊', acquisition:'🤝', trend:'📈',
+  controversy:'⚡', partnership:'🤲', regulation:'📋',
+  sustainability:'🌿', other:'📰'
+}
+const CAT_MAP = {
+  executive:   ['earnings','acquisition','partnership'],
+  fashion:     ['product_launch','campaign','trend'],
+  retail:      ['discount','earnings','trend'],
+  business:    ['acquisition','earnings','regulation'],
+  culture:     ['campaign','trend','controversy'],
+  people:      ['campaign','other'],
+  fairs:       ['product_launch','campaign'],
+  statistics:  ['earnings','trend'],
+  education:   ['trend','other'],
+}
+const PLACEHOLDER_IMGS = [
+  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=70',
+  'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&q=70',
+  'https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&q=70',
+]
+
+function escHtml(s='') { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+function dateStr(d) { return d ? new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—' }
+function imgFor(a,i=0){ return a?.image_url || PLACEHOLDER_IMGS[i % PLACEHOLDER_IMGS.length] }
+
+const params = new URLSearchParams(window.location.search)
+const cat = (params.get('cat') || 'fashion').toLowerCase()
+const catLabel = cat.charAt(0).toUpperCase() + cat.slice(1)
+
+document.getElementById('app-body').innerHTML = `
+  <div class="category-page">
+    <div class="category-header">
+      <div class="category-title">${catLabel}</div>
+      <div class="category-sub" id="cat-sub">Loading articles…</div>
+    </div>
+    <div class="category-grid" id="cat-grid">
+      <div style="grid-column:1/-1;text-align:center;padding:48px">
+        <div class="spinner" style="width:24px;height:24px;margin:0 auto 10px"></div>
+      </div>
+    </div>
+  </div>
+`
+
+async function init() {
+  try {
+    const articles = await api.getArticles({ limit: 200 })
+    const allowedTypes = CAT_MAP[cat] || []
+    let filtered = articles.filter(a => allowedTypes.includes(a.news_type))
+    if (!filtered.length) filtered = articles // fallback show all
+
+    document.getElementById('cat-sub').textContent = `${filtered.length} articles in ${catLabel}`
+
+    const grid = document.getElementById('cat-grid')
+    if (!filtered.length) {
+      grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">No articles yet</div>
+        <div class="empty-sub">Run the agent to populate this category.</div>
+      </div></div>`
+      return
+    }
+
+    grid.innerHTML = filtered.map((a,i) => `
+      <a class="article-card" href="${a.url}" target="_blank" rel="noopener">
+        <div class="article-card-img-wrap">
+          <img class="article-card-img" src="${imgFor(a,i)}" alt=""
+            onerror="this.parentElement.innerHTML='<div class=article-card-img-placeholder>${TYPE_ICONS[a.news_type]||'📰'}</div>'" />
+        </div>
+        <div class="article-card-body">
+          <div class="article-card-tags">
+            <span class="tag tag-type">${TYPE_ICONS[a.news_type]||'📰'} ${(a.news_type||'other').replace(/_/g,' ')}</span>
+            <span class="tag tag-${a.sentiment||'neutral'}">${a.sentiment||'neutral'}</span>
+            ${a.competitors?.name ? `<span class="tag tag-brand">${escHtml(a.competitors.name)}</span>` : ''}
+          </div>
+          <div class="article-card-title">${escHtml(a.title)}</div>
+          ${a.ai_summary ? `<div class="article-card-summary">${escHtml(a.ai_summary)}</div>` : ''}
+          <div class="article-card-footer">
+            <span class="article-card-source">${escHtml(a.source_name||'Unknown')} · ${dateStr(a.published_at)}</span>
+          </div>
+        </div>
+      </a>`).join('')
+
+  } catch(err) { toast.error('Failed to load: ' + err.message) }
+}
+
+init()
+</script>
+</body>
+</html>

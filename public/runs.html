@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fashion Intel — Agent Runs</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<script type="module">
+import { renderShell }    from '/js/shell.js'
+import { api }            from '/js/api.js'
+import { toast }          from '/js/toast.js'
+
+renderShell('runs')
+
+document.getElementById('app-body').innerHTML = `
+  <div class="settings-page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
+      <div>
+        <div class="settings-page-title">Agent Runs</div>
+        <div class="settings-page-sub" style="margin:0">History of all monitoring runs</div>
+      </div>
+      <button class="btn btn-primary" id="run-btn" onclick="triggerRun()">▶ Run Now</button>
+    </div>
+    <div id="run-list" style="display:flex;flex-direction:column;gap:10px">
+      <div style="text-align:center;padding:40px;color:var(--ink-muted)">Loading…</div>
+    </div>
+  </div>
+`
+
+function dur(s,e) {
+  if (!s||!e) return '—'
+  const sec = Math.round((new Date(e)-new Date(s))/1000)
+  return sec < 60 ? `${sec}s` : `${Math.floor(sec/60)}m ${sec%60}s`
+}
+
+async function loadRuns() {
+  try {
+    const runs = await api.getRuns()
+    if (!runs.length) {
+      document.getElementById('run-list').innerHTML = `
+        <div class="empty-state"><div class="empty-icon">⟳</div>
+        <div class="empty-title">No runs yet</div>
+        <div class="empty-sub">Click Run Now to start.</div></div>`
+      return
+    }
+    document.getElementById('run-list').innerHTML = runs.map(r => `
+      <div style="background:var(--ink-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+        <div>
+          <span class="run-status ${r.status}">${r.status==='completed'?'✓':r.status==='running'?'⟳':'✕'} ${r.status}</span>
+          <div style="font-size:.7rem;color:var(--ink-faint);font-family:var(--font-mono);margin-top:5px">
+            ${new Date(r.started_at).toLocaleString('en-IN')} · ${r.triggered_by||'manual'} · ${dur(r.started_at,r.completed_at)}
+          </div>
+          ${r.error_message?`<div style="font-size:.72rem;color:var(--negative);margin-top:4px">⚠ ${r.error_message}</div>`:''}
+        </div>
+        <div style="display:flex;gap:28px;margin-left:auto;flex-wrap:wrap">
+          ${[['Fetched',r.articles_fetched,''],[`Saved`,r.articles_saved,'var(--positive)'],['Filtered',r.articles_filtered,'var(--ink-faint)']].map(([l,v,c])=>`
+          <div style="text-align:center">
+            <div style="font-size:1.4rem;font-weight:700;font-family:var(--font-display);color:${c||'var(--ink)'}">
+              ${v??0}
+            </div>
+            <div style="font-size:.62rem;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em;font-family:var(--font-mono)">${l}</div>
+          </div>`).join('')}
+        </div>
+      </div>`).join('')
+  } catch(err) { toast.error('Failed to load: ' + err.message) }
+}
+
+window.triggerRun = async function() {
+  const btn = document.getElementById('run-btn')
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Running…'
+  toast.info('Agent started…')
+  try {
+    const r = await api.runAgent()
+    toast.success(`Done! ${r.saved} articles saved.`)
+    await loadRuns()
+  } catch(err) { toast.error('Run failed: ' + err.message) }
+  finally { btn.disabled=false; btn.innerHTML='▶ Run Now' }
+}
+
+loadRuns()
+</script>
+</body>
+</html>

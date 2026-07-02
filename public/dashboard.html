@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fashion Intel — Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<script type="module">
+import { renderShell }    from '/js/shell.js'
+import { api }            from '/js/api.js'
+import { toast }          from '/js/toast.js'
+import { getBrandInfo, getLogoCandidates } from '/js/brandData.js'
+
+renderShell('dashboard')
+
+const TYPE_ICONS = {
+  product_launch:'🚀', campaign:'📢', discount:'🏷️',
+  earnings:'📊', acquisition:'🤝', trend:'📈',
+  controversy:'⚡', partnership:'🤲', regulation:'📋',
+  sustainability:'🌿', other:'📰'
+}
+
+const ALL_TYPES = [
+  { val:'all',          label:'All Types' },
+  { val:'product_launch', label:'🚀 Product Launch' },
+  { val:'campaign',     label:'📢 Campaign' },
+  { val:'earnings',     label:'📊 Earnings' },
+  { val:'trend',        label:'📈 Trend' },
+  { val:'discount',     label:'🏷️ Discount' },
+  { val:'acquisition',  label:'🤝 Acquisition' },
+  { val:'partnership',  label:'🤲 Partnership' },
+  { val:'controversy',  label:'⚡ Controversy' },
+  { val:'regulation',   label:'📋 Regulation' },
+  { val:'sustainability',label:'🌿 Sustainability' },
+  { val:'other',        label:'📰 Other' },
+]
+
+const CAT_MAP = {
+  executive:   ['earnings','acquisition','partnership'],
+  fashion:     ['product_launch','campaign','trend'],
+  retail:      ['discount','earnings','trend'],
+  business:    ['acquisition','earnings','regulation'],
+  culture:     ['campaign','trend','controversy'],
+  people:      ['campaign','other'],
+  fairs:       ['product_launch','campaign'],
+  statistics:  ['earnings','trend'],
+  education:   ['trend','other'],
+}
+
+const PLACEHOLDER_IMGS = [
+  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=70',
+  'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&q=70',
+  'https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&q=70',
+  'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&q=70',
+  'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=600&q=70',
+  'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=70',
+  'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&q=70',
+  'https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=600&q=70',
+]
+
+let allArticles = []
+let filters = { type: 'all', sentiment: 'all', cat: 'all' }
+let agentRunning = false
+let spendingChart = null
+let filterOpen = false
+
+// ── Inject page layout ─────────────────────────────────────────
+document.getElementById('app-body').innerHTML = `
+
+  <!-- Ticker -->
+  <div class="ticker-bar">
+    <div class="ticker-label">LIVE</div>
+    <div class="ticker-track" id="ticker-track">
+      <div class="ticker-item">Loading latest signals…</div>
+    </div>
+  </div>
+
+  <!-- Category nav -->
+  <div class="cat-nav" id="cat-nav">
+    ${['All','Executive','Fashion','Retail','Business','Culture','People','Fairs','Statistics','Education'].map(c => `
+      <button class="cat-nav-link ${c==='All'?'active':''}"
+        data-cat="${c.toLowerCase()}"
+        onclick="setCat('${c.toLowerCase()}',this)">
+        ${c}
+      </button>`).join('')}
+  </div>
+
+  <!-- Expandable filter bar -->
+  <div class="filter-section">
+    <button class="filter-toggle-btn" id="filter-toggle-btn" onclick="toggleFilters()">
+      <span>⊞ Filter by Type & Sentiment</span>
+      <span style="font-size:.7rem;color:var(--ink-faint);margin-left:8px" id="active-filter-label"></span>
+      <span class="chevron">▼</span>
+    </button>
+    <div class="filter-panel" id="filter-panel">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;width:100%">
+        <span style="font-size:.65rem;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.1em;align-self:center;font-family:var(--font-mono);margin-right:4px">TYPE</span>
+        ${ALL_TYPES.map(t => `
+          <button class="filter-chip ${t.val==='all'?'active':''}"
+            data-ftype="type" data-val="${t.val}"
+            onclick="setFilter('type','${t.val}',this)">
+            ${t.label}
+          </button>`).join('')}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;width:100%;margin-top:8px">
+        <span style="font-size:.65rem;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.1em;align-self:center;font-family:var(--font-mono);margin-right:4px">SENTIMENT</span>
+        ${['all','positive','negative','neutral'].map(s => `
+          <button class="filter-chip ${s==='all'?'active':''}"
+            data-ftype="sentiment" data-val="${s}"
+            onclick="setFilter('sentiment','${s}',this)">
+            ${s==='all'?'All Sentiment':s.charAt(0).toUpperCase()+s.slice(1)}
+          </button>`).join('')}
+      </div>
+      <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
+        <span id="run-result" style="font-size:.74rem;color:var(--positive);font-weight:500"></span>
+        <button class="btn btn-primary" id="run-btn" onclick="runAgent()">▶ Run Agent</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main grid -->
+  <div class="content-grid">
+    <div>
+      <div id="hero-slot"></div>
+
+      <div class="section-head">
+        <div class="section-title" id="feed-title">Latest Intelligence</div>
+        <span class="section-link" id="article-count-label"></span>
+      </div>
+
+      <div class="article-grid" id="article-grid">
+        <div style="grid-column:1/-1;padding:48px;text-align:center">
+          <div class="spinner" style="width:24px;height:24px;margin:0 auto 10px"></div>
+          <div style="font-size:.82rem;color:var(--ink-faint)">Loading feed…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+      <div class="insight-panel">
+        <div class="insight-panel-head">
+          <span class="insight-panel-title">Brand Pulse</span>
+          <span style="font-size:.62rem;color:var(--ink-faint);font-family:var(--font-mono)">SENTIMENT</span>
+        </div>
+        <div class="insight-panel-body" id="brand-pulse">
+          <div style="color:var(--ink-faint);font-size:.78rem;text-align:center;padding:16px">Loading…</div>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <div class="chart-title">Consumer Signals by Category</div>
+        <canvas class="chart" id="spendingChart" height="200"></canvas>
+      </div>
+
+      <div class="insight-panel">
+        <div class="insight-panel-head">
+          <span class="insight-panel-title">Trending Topics</span>
+        </div>
+        <div class="insight-panel-body">
+          <div class="trend-tags" id="trend-tags">
+            <div style="color:var(--ink-faint);font-size:.78rem">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-head">
+          <div class="section-title">Recent</div>
+        </div>
+        <div id="recent-list"></div>
+      </div>
+
+    </div>
+  </div>
+`
+
+// ── Utils ─────────────────────────────────────────────────────
+function escHtml(s='') {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+}
+function imgFor(a, idx=0) {
+  return a?.image_url || PLACEHOLDER_IMGS[idx % PLACEHOLDER_IMGS.length]
+}
+function dateStr(d) {
+  if (!d) return '—'
+  return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})
+}
+
+// ── Toggle filters ─────────────────────────────────────────────
+window.toggleFilters = function() {
+  filterOpen = !filterOpen
+  document.getElementById('filter-panel').classList.toggle('open', filterOpen)
+  document.getElementById('filter-toggle-btn').classList.toggle('open', filterOpen)
+}
+
+// ── Category nav ───────────────────────────────────────────────
+window.setCat = function(cat, btn) {
+  filters.cat = cat
+  document.querySelectorAll('.cat-nav-link').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  const title = cat === 'all' ? 'Latest Intelligence' : cat.charAt(0).toUpperCase()+cat.slice(1)+' News'
+  document.getElementById('feed-title').textContent = title
+  applyFilters()
+}
+
+// ── Filter chips ───────────────────────────────────────────────
+window.setFilter = function(key, val, btn) {
+  filters[key] = val
+  document.querySelectorAll(`[data-ftype="${key}"]`).forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  updateFilterLabel()
+  applyFilters()
+}
+
+function updateFilterLabel() {
+  const parts = []
+  if (filters.type !== 'all') parts.push(filters.type.replace('_',' '))
+  if (filters.sentiment !== 'all') parts.push(filters.sentiment)
+  document.getElementById('active-filter-label').textContent = parts.length ? '· '+parts.join(', ') : ''
+}
+
+// ── Apply all active filters ───────────────────────────────────
+function applyFilters() {
+  let filtered = [...allArticles]
+
+  // Category filter maps to news_type groups
+  if (filters.cat !== 'all') {
+    const allowedTypes = CAT_MAP[filters.cat] || []
+    filtered = filtered.filter(a => allowedTypes.includes(a.news_type))
+    // If no type match, show all (category is approximate)
+    if (!filtered.length) filtered = [...allArticles]
+  }
+
+  if (filters.type !== 'all')
+    filtered = filtered.filter(a => a.news_type === filters.type)
+  if (filters.sentiment !== 'all')
+    filtered = filtered.filter(a => a.sentiment === filters.sentiment)
+
+  document.getElementById('article-count-label').textContent = `${filtered.length} articles`
+  renderHero(filtered[0])
+  renderGrid(filtered.slice(1, 11))
+}
+
+// ── Ticker ────────────────────────────────────────────────────
+function buildTicker(articles) {
+  if (!articles.length) return
+  const items = [...articles.slice(0,10), ...articles.slice(0,10)]
+  document.getElementById('ticker-track').innerHTML = items.map(a =>
+    `<span class="ticker-item">${TYPE_ICONS[a.news_type]||'📰'} ${escHtml(a.title)} <span class="ticker-sep">·</span></span>`
+  ).join('')
+}
+
+// ── Hero ───────────────────────────────────────────────────────
+function renderHero(a) {
+  if (!a) { document.getElementById('hero-slot').innerHTML = ''; return }
+  document.getElementById('hero-slot').innerHTML = `
+    <a class="hero-card" href="${a.url}" target="_blank" rel="noopener">
+      <img class="hero-card-img" src="${imgFor(a,0)}" alt=""
+        onerror="this.src='${PLACEHOLDER_IMGS[0]}'" />
+      <div class="hero-card-overlay"></div>
+      <div class="hero-card-content">
+        <div class="hero-card-tag">${TYPE_ICONS[a.news_type]||'📰'} ${(a.news_type||'other').replace(/_/g,' ')}</div>
+        <div class="hero-card-title">${escHtml(a.title)}</div>
+        <div class="hero-card-meta">${escHtml(a.source_name||'Unknown')} · ${dateStr(a.published_at)}</div>
+      </div>
+    </a>`
+}
+
+// ── Article grid ───────────────────────────────────────────────
+function renderGrid(articles) {
+  const grid = document.getElementById('article-grid')
+  if (!articles.length) {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1">
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <div class="empty-title">No articles found</div>
+          <div class="empty-sub">Click <strong>Run Agent</strong> to fetch the latest fashion news.</div>
+        </div>
+      </div>`
+    return
+  }
+  grid.innerHTML = articles.map((a,i) => `
+    <a class="article-card" href="${a.url}" target="_blank" rel="noopener">
+      <div class="article-card-img-wrap">
+        <img class="article-card-img" src="${imgFor(a,i+1)}" alt=""
+          onerror="this.parentElement.innerHTML='<div class=article-card-img-placeholder>${TYPE_ICONS[a.news_type]||'📰'}</div>'" />
+      </div>
+      <div class="article-card-body">
+        <div class="article-card-tags">
+          <span class="tag tag-type">${TYPE_ICONS[a.news_type]||'📰'} ${(a.news_type||'other').replace(/_/g,' ')}</span>
+          <span class="tag tag-${a.sentiment||'neutral'}">${a.sentiment||'neutral'}</span>
+          ${a.topics?.name ? `<span class="tag tag-topic">${escHtml(a.topics.name)}</span>` : ''}
+          ${a.competitors?.name ? `<span class="tag tag-brand">${escHtml(a.competitors.name)}</span>` : ''}
+        </div>
+        <div class="article-card-title">${escHtml(a.title)}</div>
+        ${a.ai_summary ? `<div class="article-card-summary">${escHtml(a.ai_summary)}</div>` : ''}
+        <div class="article-card-footer">
+          <span class="article-card-source">${escHtml(a.source_name||'Unknown')} · ${dateStr(a.published_at)}</span>
+          <div class="relevance-mini">
+            ${Array.from({length:5}).map((_,j) =>
+              `<div class="relevance-pip ${j<Math.round((a.relevance_score||0)/2)?'on':''}"></div>`
+            ).join('')}
+          </div>
+        </div>
+      </div>
+    </a>`).join('')
+}
+
+// ── Recent list ────────────────────────────────────────────────
+function renderRecent(articles) {
+  const el = document.getElementById('recent-list')
+  if (!articles.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:20px 0"><div class="empty-sub">No articles yet</div></div>'
+    return
+  }
+  el.innerHTML = articles.slice(0,6).map((a,i) => `
+    <a class="article-list-item" href="${a.url}" target="_blank" rel="noopener">
+      <div class="article-list-thumb">
+        <img src="${imgFor(a,i+4)}" alt=""
+          onerror="this.parentElement.innerHTML='<div class=article-list-thumb-placeholder>${TYPE_ICONS[a.news_type]||'📰'}</div>'" />
+      </div>
+      <div class="article-list-body">
+        <div class="article-list-tag">${(a.news_type||'other').replace(/_/g,' ')}</div>
+        <div class="article-list-title">${escHtml(a.title)}</div>
+        <div class="article-list-meta">${escHtml(a.source_name||'Unknown')} · ${dateStr(a.published_at)}</div>
+      </div>
+    </a>`).join('')
+}
+
+// ── Brand Pulse (uses accurate server-side aggregate — not just
+// the currently-loaded article page, so numbers always match the
+// brand profile page) ──────────────────────────────────────────
+async function renderBrandPulse() {
+  try {
+    const stats = await api.getCompetitorStats()
+    const withArticles = (stats || [])
+      .filter(c => c.stats.total > 0)
+      .sort((a,b) => b.stats.total - a.stats.total)
+      .slice(0, 8)
+
+    if (!withArticles.length) {
+      document.getElementById('brand-pulse').innerHTML =
+        '<div style="color:var(--ink-faint);font-size:.78rem;text-align:center;padding:12px">Run agent to see brand data</div>'
+      return
+    }
+
+    document.getElementById('brand-pulse').innerHTML = withArticles.map(c => {
+      const d = c.stats
+      const posPct = Math.round((d.pos/d.total)*100)
+      const negPct = Math.round((d.neg/d.total)*100)
+      const neuPct = 100 - posPct - negPct
+      const dominant = d.pos>d.neg && d.pos>d.neu ? 'pos' : d.neg>d.pos && d.neg>d.neu ? 'neg' : 'neu'
+      const label = dominant==='pos' ? { text:`+${posPct}%`, color:'var(--positive)' }
+                  : dominant==='neg' ? { text:`-${negPct}%`, color:'var(--negative)' }
+                  : { text:`~${neuPct}%`, color:'var(--neutral)' }
+      const candidates = getLogoCandidates(c.name)
+      const initial = c.name.charAt(0).toUpperCase()
+      return `
+        <div class="brand-row" style="cursor:pointer" onclick="window.location.href='/brand.html?q=${encodeURIComponent(c.name)}'">
+          <div style="display:flex;align-items:center;gap:8px;min-width:110px">
+            <img src="${candidates[0]}" data-fallbacks='${JSON.stringify(candidates.slice(1))}' alt="" style="width:20px;height:20px;border-radius:4px;object-fit:contain;background:var(--bg-soft);flex-shrink:0"
+              onerror="window.__logoErr(this,'${initial}')" />
+            <div>
+              <div class="brand-name">${escHtml(c.name)}</div>
+              <div style="font-size:.6rem;color:var(--ink-faint);font-family:var(--font-mono)">${d.total} article${d.total!==1?'s':''}</div>
+            </div>
+          </div>
+          <div class="brand-bar-wrap">
+            ${posPct>0?`<div class="brand-bar pos" style="width:${posPct}%"></div>`:''}
+            ${negPct>0?`<div class="brand-bar neg" style="width:${negPct}%"></div>`:''}
+            ${neuPct>0?`<div class="brand-bar neu" style="width:${neuPct}%"></div>`:''}
+          </div>
+          <div class="brand-pct" style="color:${label.color}">${label.text}</div>
+        </div>`
+    }).join('')
+  } catch (err) {
+    document.getElementById('brand-pulse').innerHTML =
+      '<div style="color:var(--ink-faint);font-size:.78rem;text-align:center;padding:12px">Failed to load brand data</div>'
+  }
+}
+
+// ── Trending topics → go to brand page ────────────────────────
+function renderTrendTags(articles) {
+  const counts = {}
+  for (const a of articles) {
+    // Use brand names and topic names as trends
+    if (a.competitors?.name) {
+      const n = a.competitors.name
+      counts[n] = (counts[n]||0) + 3 // weight brands higher
+    }
+    if (a.topics?.name) {
+      const n = a.topics.name
+      counts[n] = (counts[n]||0) + 1
+    }
+    // Also extract meaningful words from title
+    const words = (a.title||'').split(/\s+/)
+      .filter(w => w.length > 5 && /^[A-Z]/.test(w) && !/^(About|Which|Their|After|While|Where|These|Those|Being|Since|Would|Could|Should|Fashion|Brand|Latest)$/i.test(w))
+    for (const w of words) counts[w] = (counts[w]||0) + 1
+  }
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,14)
+  document.getElementById('trend-tags').innerHTML = top.map(([w]) =>
+    `<a class="trend-tag" href="/brand.html?q=${encodeURIComponent(w)}">${escHtml(w)}</a>`
+  ).join('')
+}
+
+// ── Consumer signals chart ─────────────────────────────────────
+function buildSpendingChart(articles) {
+  const cats = {}
+  for (const a of articles) {
+    const cat = a.competitors?.category || (a.topics?.name ? a.topics.name.split(' ')[0] : 'General')
+    cats[cat] = (cats[cat]||0) + 1
+  }
+  const labels = Object.keys(cats)
+  const values = Object.values(cats)
+  if (spendingChart) spendingChart.destroy()
+  const ctx = document.getElementById('spendingChart').getContext('2d')
+  spendingChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets:[{
+        data: values,
+        backgroundColor:['#c9a84c','#7c3aed','#16a34a','#dc2626','#c2410c','#0284c7','#0891b2','#65a30d'],
+        borderWidth: 0,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis:'y',
+      responsive:true,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ ticks:{color:'#999',font:{size:10}}, grid:{color:'#f0ede8'}, beginAtZero:true },
+        y:{ ticks:{color:'#666',font:{size:10}}, grid:{display:false} },
+      }
+    }
+  })
+}
+
+// ── Run agent ─────────────────────────────────────────────────
+window.runAgent = async function() {
+  if (agentRunning) return
+  agentRunning = true
+  const btn = document.getElementById('run-btn')
+  btn.disabled = true
+  btn.innerHTML = '<span class="spinner"></span> Running…'
+  document.getElementById('run-result').textContent = ''
+  toast.info('Agent started — fetching fashion news…')
+  try {
+    const result = await api.runAgent()
+    document.getElementById('run-result').textContent = `✓ ${result.saved} saved · ${result.filtered} filtered`
+    toast.success(`Done! ${result.saved} new articles saved.`)
+    await loadAll()
+  } catch(err) {
+    toast.error('Agent failed: ' + err.message)
+  } finally {
+    agentRunning = false
+    btn.disabled = false
+    btn.innerHTML = '▶ Run Agent'
+  }
+}
+
+// ── Load all data ─────────────────────────────────────────────
+async function loadAll() {
+  try {
+    allArticles = await api.getArticles({ limit:100 }) || []
+    buildTicker(allArticles)
+    buildSpendingChart(allArticles)
+    renderBrandPulse()
+    renderTrendTags(allArticles)
+    renderRecent(allArticles)
+    document.getElementById('article-count-label').textContent = `${allArticles.length} articles`
+    renderHero(allArticles[0])
+    renderGrid(allArticles.slice(1,11))
+  } catch(err) {
+    toast.error('Failed to load: ' + err.message)
+  }
+}
+
+loadAll()
+</script>
+</body>
+</html>

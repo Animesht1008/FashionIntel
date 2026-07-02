@@ -1,0 +1,114 @@
+-- Auto-generated from public/js/brandData.js
+-- Run scripts/generate_brand_seed.mjs to regenerate after editing brandData.js
+--
+-- Seeds the full curated brand directory (~100 brands) as competitors.
+-- All are inserted PAUSED (is_active = false) by default: GNews's free
+-- tier only allows 100 requests/day, so monitoring all of these at once
+-- would exhaust the quota in a single run. Activate the ones you care
+-- about most in Manage Searches — the rest still show full About pages
+-- (bio, logo, social links) even while paused.
+
+-- Required so ON CONFLICT (name) below can detect existing rows
+CREATE UNIQUE INDEX IF NOT EXISTS competitors_name_unique_idx ON competitors (name);
+
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Louis Vuitton', ARRAY['Louis Vuitton'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Gucci', ARRAY['Gucci'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Chanel', ARRAY['Chanel'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Hermès', ARRAY['Hermès'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Prada', ARRAY['Prada'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Dior', ARRAY['Dior'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Fendi', ARRAY['Fendi'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Balenciaga', ARRAY['Balenciaga'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Versace', ARRAY['Versace'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Burberry', ARRAY['Burberry'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Cartier', ARRAY['Cartier'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Bvlgari', ARRAY['Bvlgari'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Saint Laurent', ARRAY['Saint Laurent'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Valentino', ARRAY['Valentino'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Givenchy', ARRAY['Givenchy'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Armani', ARRAY['Armani'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Dolce & Gabbana', ARRAY['Dolce & Gabbana'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Ralph Lauren', ARRAY['Ralph Lauren'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Tom Ford', ARRAY['Tom Ford'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Celine', ARRAY['Celine'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Zara', ARRAY['Zara'], 'Fast Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('H&M', ARRAY['H&M'], 'Fast Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Shein', ARRAY['Shein'], 'Fast Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Uniqlo', ARRAY['Uniqlo'], 'Fast Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Primark', ARRAY['Primark'], 'Fast Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Forever 21', ARRAY['Forever 21'], 'Fast Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Mango', ARRAY['Mango'], 'Fast Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Bershka', ARRAY['Bershka'], 'Fast Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Asos', ARRAY['Asos'], 'Fast Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Boohoo', ARRAY['Boohoo'], 'Fast Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Nike', ARRAY['Nike'], 'Sportswear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Adidas', ARRAY['Adidas'], 'Sportswear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Puma', ARRAY['Puma'], 'Sportswear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Under Armour', ARRAY['Under Armour'], 'Sportswear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Reebok', ARRAY['Reebok'], 'Sportswear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('New Balance', ARRAY['New Balance'], 'Sportswear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Lululemon', ARRAY['Lululemon'], 'Athleisure', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Fila', ARRAY['Fila'], 'Sportswear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Skechers', ARRAY['Skechers'], 'Sportswear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Asics', ARRAY['Asics'], 'Sportswear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Levi''s', ARRAY['Levi''s'], 'Denim & Casual', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Gap', ARRAY['Gap'], 'Denim & Casual', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Tommy Hilfiger', ARRAY['Tommy Hilfiger'], 'Denim & Casual', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Calvin Klein', ARRAY['Calvin Klein'], 'Denim & Casual', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Diesel', ARRAY['Diesel'], 'Denim & Casual', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Supreme', ARRAY['Supreme'], 'Streetwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Off-White', ARRAY['Off-White'], 'Streetwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Stussy', ARRAY['Stussy'], 'Streetwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Crocs', ARRAY['Crocs'], 'Footwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Vans', ARRAY['Vans'], 'Footwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Converse', ARRAY['Converse'], 'Footwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Timberland', ARRAY['Timberland'], 'Footwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Dr. Martens', ARRAY['Dr. Martens'], 'Footwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Clarks', ARRAY['Clarks'], 'Footwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Coach', ARRAY['Coach'], 'Accessories', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Michael Kors', ARRAY['Michael Kors'], 'Accessories', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Kate Spade', ARRAY['Kate Spade'], 'Accessories', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Fossil', ARRAY['Fossil'], 'Accessories', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Patagonia', ARRAY['Patagonia'], 'Outdoor', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('The North Face', ARRAY['The North Face'], 'Outdoor', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Columbia', ARRAY['Columbia'], 'Outdoor', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Wildcraft', ARRAY['Wildcraft'], 'Outdoor', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Victoria''S Secret', ARRAY['Victoria''S Secret'], 'Innerwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Jockey', ARRAY['Jockey'], 'Innerwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Fabindia', ARRAY['Fabindia'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Manyavar', ARRAY['Manyavar'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Nykaa Fashion', ARRAY['Nykaa Fashion'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Myntra', ARRAY['Myntra'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Westside', ARRAY['Westside'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Biba', ARRAY['Biba'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Global Desi', ARRAY['Global Desi'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Raymond', ARRAY['Raymond'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Peter England', ARRAY['Peter England'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Van Heusen', ARRAY['Van Heusen'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Allen Solly', ARRAY['Allen Solly'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('US Polo Assn', ARRAY['US Polo Assn'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Pantaloons', ARRAY['Pantaloons'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Max Fashion', ARRAY['Max Fashion'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Lifestyle', ARRAY['Lifestyle'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Shoppers Stop', ARRAY['Shoppers Stop'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Bata', ARRAY['Bata'], 'Footwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Woodland', ARRAY['Woodland'], 'Footwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Metro Shoes', ARRAY['Metro Shoes'], 'Footwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Wrangler', ARRAY['Wrangler'], 'Denim & Casual', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Lee', ARRAY['Lee'], 'Denim & Casual', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Champion', ARRAY['Champion'], 'Denim & Casual', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Superdry', ARRAY['Superdry'], 'Denim & Casual', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Jack & Jones', ARRAY['Jack & Jones'], 'Denim & Casual', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Vero Moda', ARRAY['Vero Moda'], 'Fast Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Pepe Jeans', ARRAY['Pepe Jeans'], 'Denim & Casual', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Guess', ARRAY['Guess'], 'Denim & Casual', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Steve Madden', ARRAY['Steve Madden'], 'Footwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Aldo', ARRAY['Aldo'], 'Footwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Charles & Keith', ARRAY['Charles & Keith'], 'Footwear', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Faballey', ARRAY['Faballey'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('AND', ARRAY['AND'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Sabyasachi', ARRAY['Sabyasachi'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Anita Dongre', ARRAY['Anita Dongre'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Ritu Kumar', ARRAY['Ritu Kumar'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('W For Woman', ARRAY['W For Woman'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;
+INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Aurelia', ARRAY['Aurelia'], 'Indian Fashion', false) ON CONFLICT (name) DO NOTHING;

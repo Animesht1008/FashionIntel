@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fashion Intel — Manage Searches</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<script type="module">
+import { renderShell }    from '/js/shell.js'
+import { api }            from '/js/api.js'
+import { toast }          from '/js/toast.js'
+import { getBrandInfo, getLogoCandidates } from '/js/brandData.js'
+
+renderShell('settings')
+
+document.getElementById('app-body').innerHTML = `
+  <div class="settings-page">
+    <div class="settings-page-title">Manage Searches</div>
+    <div class="settings-page-sub">Control which topics, brands, and sources the agent monitors.</div>
+    <div class="manager-grid" id="manager-grid">
+      <div style="color:var(--ink-muted);font-size:.85rem;padding:40px;text-align:center">
+        <div class="spinner" style="width:24px;height:24px;margin:0 auto 12px"></div>
+        Loading…
+      </div>
+    </div>
+  </div>
+`
+
+function escHtml(s='') {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+}
+
+function renderItems(managerId, items) {
+  if (!items.length) return `<div style="padding:20px;text-align:center;color:var(--ink-faint);font-size:.78rem">No items yet — add one above</div>`
+  const showLogo = managerId === 'competitors'
+  return items.map(item => {
+    const candidates = showLogo ? getLogoCandidates(item.name) : []
+    const initial = item.name.charAt(0).toUpperCase()
+    return `
+    <div class="manager-item" id="item-${item.id}">
+      ${showLogo ? `
+      <img src="${candidates[0]}" data-fallbacks='${JSON.stringify(candidates.slice(1))}' alt="" style="width:22px;height:22px;border-radius:4px;object-fit:contain;background:var(--bg-soft);border:1px solid var(--border);flex-shrink:0"
+        onerror="window.__logoErr(this,'${initial}')" />` : ''}
+      <div class="manager-item-info">
+        <div class="manager-item-name">${escHtml(item.name)}</div>
+        <div class="manager-item-sub">${
+          item.keywords ? escHtml(item.keywords.join(', '))
+          : item.domain ? escHtml(item.domain)
+          : escHtml(item.category||'')
+        }</div>
+      </div>
+      <button class="toggle-btn ${item.is_active?'on':'off'}"
+        onclick="handleToggle('${managerId}','${item.id}',${item.is_active})">
+        ${item.is_active ? 'Active' : 'Paused'}
+      </button>
+      <button class="btn btn-danger btn-sm" onclick="handleDelete('${managerId}','${item.id}')">✕</button>
+    </div>`
+  }).join('')
+}
+
+function createManager({ id, title, icon, items, fields }) {
+  return `
+    <div class="manager-card">
+      <div class="manager-header">
+        <span class="manager-icon">${icon}</span>
+        <span class="manager-title">${title}</span>
+        <span class="manager-count" id="count-${id}">${items.length} items</span>
+      </div>
+      <div class="manager-form">
+        ${fields.map(f => `<input class="input" id="${id}-${f.key}" placeholder="${f.placeholder}" />`).join('')}
+        <button class="btn btn-primary btn-sm" onclick="handleCreate('${id}')">+ Add</button>
+      </div>
+      <div class="manager-list" id="list-${id}">${renderItems(id, items)}</div>
+    </div>`
+}
+
+const MANAGERS = {
+  topics: {
+    title:'Topics', icon:'📋',
+    fields:[
+      { key:'name',     placeholder:'Topic name (e.g. Luxury Fashion)' },
+      { key:'keywords', placeholder:'Keywords, comma separated (optional)' },
+    ],
+    getAll: () => api.getTopics(),
+    create: b  => api.createTopic(b),
+    toggle: (id,b) => api.updateTopic(id,b),
+    destroy: id => api.deleteTopic(id),
+    parse(id) {
+      const name = document.getElementById(`${id}-name`).value.trim()
+      const rawKeywords = document.getElementById(`${id}-keywords`).value.split(',').map(s=>s.trim()).filter(Boolean)
+      if (!name) throw new Error('Topic name is required')
+      // Keywords are optional — defaults to the name itself so adding
+      // a topic only ever requires one field.
+      const keywords = rawKeywords.length ? rawKeywords : [name]
+      return { name, keywords }
+    }
+  },
+  competitors: {
+    title:'Brands / Competitors', icon:'🏷️',
+    fields:[
+      { key:'name',     placeholder:'Brand name (e.g. Gucci)' },
+      { key:'keywords', placeholder:'Keywords, comma separated (optional)' },
+      { key:'category', placeholder:'Category (optional — auto-filled if known)' },
+    ],
+    getAll: () => api.getCompetitors(),
+    create: b  => api.createCompetitor(b),
+    toggle: (id,b) => api.updateCompetitor(id,b),
+    destroy: id => api.deleteCompetitor(id),
+    parse(id) {
+      const name = document.getElementById(`${id}-name`).value.trim()
+      const rawKeywords = document.getElementById(`${id}-keywords`).value.split(',').map(s=>s.trim()).filter(Boolean)
+      const rawCategory = document.getElementById(`${id}-category`).value.trim()
+      if (!name) throw new Error('Brand name is required')
+      // Only the name is truly required — keywords default to the
+      // brand name, and category auto-fills from our curated brand
+      // database when the name is recognized (e.g. "Puma" → Sportswear).
+      const keywords = rawKeywords.length ? rawKeywords : [name]
+      const info = getBrandInfo(name)
+      const category = rawCategory || info?.category || ''
+      return { name, keywords, ...(category && { category }) }
+    }
+  },
+  sources: {
+    title:'Sources', icon:'🌐',
+    fields:[
+      { key:'name',   placeholder:'Source name (e.g. Vogue Business)' },
+      { key:'domain', placeholder:'domain.com (optional)' },
+    ],
+    getAll: () => api.getSources(),
+    create: b  => api.createSource(b),
+    toggle: (id,b) => api.updateSource(id,b),
+    destroy: id => api.deleteSource(id),
+    parse(id) {
+      const name = document.getElementById(`${id}-name`).value.trim()
+      const domain = document.getElementById(`${id}-domain`).value.trim()
+      if (!name) throw new Error('Name is required')
+      return { name, ...(domain && { domain }) }
+    }
+  }
+}
+
+const state = { topics:[], competitors:[], sources:[] }
+
+window.handleCreate = async function(mid) {
+  const m = MANAGERS[mid]
+  try {
+    const body = m.parse(mid)
+    await m.create(body)
+    toast.success('Added successfully!')
+    m.fields.forEach(f => { document.getElementById(`${mid}-${f.key}`).value = '' })
+    await reload(mid)
+  } catch(err) { toast.error(err.message) }
+}
+
+window.handleToggle = async function(mid, itemId, current) {
+  try {
+    await MANAGERS[mid].toggle(itemId, { is_active: !current })
+    await reload(mid)
+  } catch(err) { toast.error(err.message) }
+}
+
+window.handleDelete = async function(mid, itemId) {
+  if (!confirm('Remove this item?')) return
+  try {
+    await MANAGERS[mid].destroy(itemId)
+    toast.success('Removed.')
+    await reload(mid)
+  } catch(err) { toast.error(err.message) }
+}
+
+async function reload(mid) {
+  state[mid] = await MANAGERS[mid].getAll() || []
+  document.getElementById(`list-${mid}`).innerHTML = renderItems(mid, state[mid])
+  document.getElementById(`count-${mid}`).textContent = `${state[mid].length} items`
+}
+
+async function init() {
+  const [topics, competitors, sources] = await Promise.all([
+    api.getTopics(), api.getCompetitors(), api.getSources()
+  ])
+  state.topics = topics||[]; state.competitors = competitors||[]; state.sources = sources||[]
+  document.getElementById('manager-grid').innerHTML = [
+    createManager({ id:'topics',      items:state.topics,      ...MANAGERS.topics }),
+    createManager({ id:'competitors', items:state.competitors, ...MANAGERS.competitors }),
+    createManager({ id:'sources',     items:state.sources,     ...MANAGERS.sources }),
+  ].join('')
+}
+
+init()
+</script>
+</body>
+</html>

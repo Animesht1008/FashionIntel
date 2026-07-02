@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fashion Intel — Sign In</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div class="page-wrap auth-page">
+  <div class="auth-left">
+    <div class="auth-left-bg"></div>
+    <div class="auth-left-content">
+      <div class="auth-brand">Fashion<em>Intel</em></div>
+      <p class="auth-tagline">
+        Real-time brand intelligence powered by AI. Monitor fashion brands,
+        track consumer trends, and surface insights that matter.
+      </p>
+      <div class="auth-features">
+        <div class="auth-feature"><div class="auth-feature-dot"></div>AI-powered news analysis & noise filtering</div>
+        <div class="auth-feature"><div class="auth-feature-dot"></div>Sentiment tracking across fashion brands</div>
+        <div class="auth-feature"><div class="auth-feature-dot"></div>Consumer spending trends & market signals</div>
+        <div class="auth-feature"><div class="auth-feature-dot"></div>Automated monitoring every 6 hours</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+      <div class="auth-form-title">Welcome back</div>
+      <div class="auth-form-sub">Sign in to your intelligence dashboard</div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login"  onclick="switchTab('login')">Sign In</button>
+        <button class="auth-tab"        id="tab-signup" onclick="switchTab('signup')">Create Account</button>
+      </div>
+
+      <div class="error-msg" id="error-box" style="display:none"></div>
+
+      <div id="form-login">
+        <div class="form-group">
+          <label class="form-label">Email address</label>
+          <input class="input" type="email" id="login-email" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" id="btn-login" onclick="handleLogin()">Sign In</button>
+      </div>
+
+      <div id="form-signup" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Full name</label>
+          <input class="input" type="text" id="signup-name" placeholder="Your name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email address</label>
+          <input class="input" type="email" id="signup-email" placeholder="you@example.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password <span style="color:var(--ink-faint);font-weight:400">(min 8 chars)</span></label>
+          <input class="input" type="password" id="signup-password" placeholder="••••••••" />
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" id="btn-signup" onclick="handleSignup()">Create Account</button>
+      </div>
+
+      <div class="auth-quote">
+        "Style is a way to say who you are without having to speak."<br>
+        <span style="font-style:normal;font-size:0.72rem;color:var(--ink-faint)">— Rachel Zoe</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { api } from '/js/api.js'
+import { saveSession, redirectIfAuth } from '/js/auth.js'
+
+redirectIfAuth()
+
+window.switchTab = function(tab) {
+  document.getElementById('form-login').style.display  = tab==='login'?'block':'none'
+  document.getElementById('form-signup').style.display = tab==='signup'?'block':'none'
+  document.getElementById('tab-login').classList.toggle('active', tab==='login')
+  document.getElementById('tab-signup').classList.toggle('active', tab==='signup')
+  document.getElementById('error-box').style.display='none'
+}
+function showError(m){ const e=document.getElementById('error-box'); e.textContent=m; e.style.display='block' }
+function setLoading(id,on){
+  const b=document.getElementById(id); b.disabled=on
+  b.innerHTML = on ? '<span class="spinner"></span> Please wait…' : (id==='btn-login'?'Sign In':'Create Account')
+}
+window.handleLogin = async function() {
+  document.getElementById('error-box').style.display='none'
+  const email=document.getElementById('login-email').value.trim()
+  const password=document.getElementById('login-password').value
+  if(!email||!password){showError('Please fill in all fields.');return}
+  setLoading('btn-login',true)
+  try{
+    const {token,user}=await api.login({email,password})
+    saveSession(token,user)
+    window.location.href='/dashboard.html'
+  }catch(err){showError(err.message);setLoading('btn-login',false)}
+}
+window.handleSignup = async function() {
+  document.getElementById('error-box').style.display='none'
+  const name=document.getElementById('signup-name').value.trim()
+  const email=document.getElementById('signup-email').value.trim()
+  const password=document.getElementById('signup-password').value
+  if(!name||!email||!password){showError('Please fill in all fields.');return}
+  setLoading('btn-signup',true)
+  try{
+    const {token,user}=await api.signup({name,email,password})
+    saveSession(token,user)
+    window.location.href='/dashboard.html'
+  }catch(err){showError(err.message);setLoading('btn-signup',false)}
+}
+document.addEventListener('keydown', e=>{
+  if(e.key!=='Enter')return
+  const isLogin=document.getElementById('form-login').style.display!=='none'
+  isLogin?handleLogin():handleSignup()
+})
+</script>
+</body>
+</html>

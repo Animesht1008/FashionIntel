@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fashion Intel — Activity Log</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<script type="module">
+import { renderShell }    from '/js/shell.js'
+import { api }            from '/js/api.js'
+import { toast }          from '/js/toast.js'
+
+renderShell('logs')
+
+document.getElementById('app-body').innerHTML = `
+  <div class="settings-page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
+      <div>
+        <div class="settings-page-title">Activity Log</div>
+        <div class="settings-page-sub" style="margin:0">Real-time server and agent activity</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="level-filter" onchange="loadLogs()" style="background:var(--ink-muted);border:1px solid var(--border);border-radius:var(--radius);color:var(--ink);padding:8px 12px;font-size:.8rem;font-family:var(--font-mono);outline:none;cursor:pointer">
+          <option value="">All levels</option>
+          <option value="info">Info</option>
+          <option value="warn">Warn</option>
+          <option value="error">Error</option>
+          <option value="debug">Debug</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="loadLogs()">↻ Refresh</button>
+      </div>
+    </div>
+    <div style="background:var(--ink-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+      <table class="log-table">
+        <thead>
+          <tr>
+            <th style="width:170px">Time</th>
+            <th style="width:80px">Level</th>
+            <th>Message</th>
+            <th style="width:200px">Meta</th>
+          </tr>
+        </thead>
+        <tbody id="log-body">
+          <tr><td colspan="4" style="text-align:center;padding:40px;color:var(--ink-faint)">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+`
+
+function escHtml(s='') { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+window.loadLogs = async function() {
+  const level = document.getElementById('level-filter').value
+  try {
+    const logs = await api.getLogs(level ? { level } : {})
+    if (!logs.length) {
+      document.getElementById('log-body').innerHTML =
+        `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--ink-faint)">No logs found. Run the agent to generate activity.</td></tr>`
+      return
+    }
+    document.getElementById('log-body').innerHTML = logs.map(l => `
+      <tr>
+        <td>${new Date(l.created_at).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit'})}</td>
+        <td><span class="log-level log-level-${l.level}">${l.level}</span></td>
+        <td style="color:var(--ink)">${escHtml(l.message)}</td>
+        <td style="font-size:.68rem">${l.meta ? escHtml(JSON.stringify(l.meta)).slice(0,120) : '—'}</td>
+      </tr>`).join('')
+  } catch(err) { toast.error('Failed to load logs: ' + err.message) }
+}
+
+loadLogs()
+setInterval(loadLogs, 30000)
+</script>
+</body>
+</html>
