@@ -1,14 +1,3 @@
--- Auto-generated from public/js/brandData.js
--- Run scripts/generate_brand_seed.mjs to regenerate after editing brandData.js
---
--- Seeds the full curated brand directory (~100 brands) as competitors.
--- All are inserted PAUSED (is_active = false) by default: GNews's free
--- tier only allows 100 requests/day, so monitoring all of these at once
--- would exhaust the quota in a single run. Activate the ones you care
--- about most in Manage Searches — the rest still show full About pages
--- (bio, logo, social links) even while paused.
-
--- Required so ON CONFLICT (name) below can detect existing rows
 CREATE UNIQUE INDEX IF NOT EXISTS competitors_name_unique_idx ON competitors (name);
 
 INSERT INTO competitors (name, keywords, category, is_active) VALUES ('Louis Vuitton', ARRAY['Louis Vuitton'], 'Luxury', false) ON CONFLICT (name) DO NOTHING;
