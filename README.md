@@ -48,7 +48,3 @@ An AI-powered Node.js agent that monitors fashion brand news in real time, filte
 7. **Agent Runs** → view full history of every monitoring cycle
 8. **Activity Log** → real-time server logs stored in the database
 
----
-## 🔮 Further Development
-
-See `FUTURE.md` for the full roadmap.
