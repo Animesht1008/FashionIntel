@@ -1,6 +1,4 @@
-// Generates supabase/migrations/002_seed_top_brands.sql from
-// public/js/brandData.js — keeps the DB seed and the About-page
-// data in perfect sync. Run with: node scripts/generate_brand_seed.mjs
+// Generates supabase/migrations/top_brands.sql from public/js/brandData.js — keeps the DB seed and the About-page data in perfect sync. Run with: node scripts/generate_brand_seed.mjs
 import { BRAND_INFO } from '../public/js/brandData.js'
 import { writeFileSync } from 'fs'
 
@@ -39,10 +37,7 @@ function toDisplayName(key) {
   return key.replace(/\b\w/g, c => c.toUpperCase())
 }
 
-// Skip brands commonly already added manually under slightly
-// different naming (e.g. user's "BoAt Lifestyle" vs our "Boat") —
-// About-page lookups still work via fuzzy matching in getBrandInfo()
-// regardless of the exact name stored in the competitors table.
+// Skip brands commonly already added manually under slightly different naming 
 const SKIP_KEYS = new Set(['boat', 'one8'])
 
 for (const [key, info] of Object.entries(BRAND_INFO)) {

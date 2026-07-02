@@ -17,10 +17,7 @@ router.get('/', authMiddleware, async (req, res) => {
   res.json(data)
 })
 
-// GET /api/competitors/stats — accurate sentiment + article counts per brand
-// Computed from ALL matching rows in the DB (no pagination limit), so this
-// is always consistent between the dashboard Brand Pulse widget and the
-// individual brand profile page.
+// GET /api/competitors/stats — accurate sentiment + article counts per brand Computed from ALL matching rows in the DB (no pagination limit).
 router.get('/stats', authMiddleware, async (req, res) => {
   const { data: competitors, error: compErr } = await db
     .from('competitors').select('*').order('name')

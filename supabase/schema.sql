@@ -1,8 +1,3 @@
--- ============================================================
--- Fashion News Agent — Supabase Schema
--- Run this in your Supabase SQL editor
--- ============================================================
-
 -- Users (for login/signup)
 CREATE TABLE IF NOT EXISTS users (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -83,9 +78,8 @@ CREATE TABLE IF NOT EXISTS logs (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- ============================================================
+
 -- Seed Data
--- ============================================================
 
 INSERT INTO topics (name, keywords) VALUES
   ('Luxury Fashion', ARRAY['Louis Vuitton','Gucci','Prada','Chanel','Hermès','luxury fashion','LVMH']),

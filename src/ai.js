@@ -11,9 +11,6 @@ const VALID_NEWS_TYPES = [
 ]
 
 // ── Zod schema for AI response validation ─────────────────────
-// news_type is coerced to 'other' if the AI invents a type we don't
-// recognize (e.g. "regulation", "sustainability") instead of failing
-// validation and discarding the article.
 const AnalysisSchema = z.object({
   is_noise: z.boolean(),
   relevance_score: z.number().int().min(1).max(10),
@@ -26,8 +23,7 @@ const AnalysisSchema = z.object({
 })
 
 /**
- * Analyzes a raw article using Groq + Llama 3.3 70B.
- * Returns a validated analysis object, or null if noise / parse fails.
+ * Analyzes a raw article using Groq + Llama 3.3 70B. Returns a validated analysis object, or null if noise / parse fails.
  */
 export async function analyzeArticle(article) {
   const prompt = `You are a senior fashion industry intelligence analyst.

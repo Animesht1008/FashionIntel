@@ -5,8 +5,7 @@ import logger from './logger.js'
 
 /**
  * Main agent runner.
- * Fetches news for all active topics + competitors,
- * runs AI analysis, filters noise, and saves to DB.
+ * Fetches news for all active topics + competitors, runs AI analysis, filters noise, and saves to DB.
  */
 export async function runAgent(triggeredBy = 'manual') {
   logger.info('Agent run started', { triggeredBy })
@@ -55,10 +54,7 @@ export async function runAgent(triggeredBy = 'manual') {
     }
 
     // ── Process competitors ────────────────────────────────
-    // Runs AFTER topics on purpose: if a brand's article was already
-    // picked up by a broader topic query above, this pass will LINK
-    // the competitor_id onto that existing row (see processArticle)
-    // rather than treating it as a throwaway duplicate.
+    // Runs AFTER topics on purpose: if a brand's article was already picked up by a broader topic query above, this pass will LINK the competitor_id onto that existing row (see processArticle) rather than treating it as a throwaway duplicate.
     for (const brand of competitors ?? []) {
       logger.debug(`Fetching news for brand: ${brand.name}`)
       const articles = await fetchArticlesForKeywords(brand.keywords)
@@ -103,12 +99,6 @@ export async function runAgent(triggeredBy = 'manual') {
  */
 async function processArticle(article, topicId, competitorId) {
   // ── Dedup check ────────────────────────────────────────────
-  // Select existing associations too — if this article was already
-  // saved (e.g. found via a topic query) and now shows up again via
-  // a brand-specific query, we ATTACH the missing association
-  // instead of discarding it. Without this, articles never get
-  // tagged with competitor_id if a topic pass reached them first,
-  // which was making brands look like they had zero coverage.
   const { data: existing } = await db
     .from('articles')
     .select('id, topic_id, competitor_id')

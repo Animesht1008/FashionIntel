@@ -1,14 +1,3 @@
-// ── Curated brand reference data (~100 fashion brands) ──────────
-// Used to show an "About" profile (Wikipedia-style) when a brand
-// has little or no tracked news yet, and to power logos + social
-// links across the app.
-//
-// LOGO NOTE: Clearbit's free Logo API (logo.clearbit.com) was
-// permanently shut down on December 8, 2025. We use unavatar.io
-// (no signup/API key required) as the primary source, with Google's
-// favicon service as a second fallback, and initials as the final
-// fallback. See getLogoCandidates() below.
-
 export const BRAND_INFO = {
   // ── Luxury ──────────────────────────────────────────────────
   'louis vuitton': { domain:'louisvuitton.com', category:'Luxury', founded:'1854', headquarters:'Paris, France', products:'Luxury leather goods, fashion & accessories', description:'Louis Vuitton is a French luxury house and part of LVMH, famous for its monogram canvas, leather goods, and haute couture lines.', instagram:'https://instagram.com/louisvuitton', facebook:'https://facebook.com/LouisVuitton', website:'https://louisvuitton.com' },

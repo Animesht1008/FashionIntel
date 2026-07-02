@@ -1,7 +1,3 @@
--- Run this in Supabase SQL Editor if your database was created
--- BEFORE the news_type list included 'partnership'.
--- Safe to run multiple times.
-
 ALTER TABLE articles
 DROP CONSTRAINT IF EXISTS articles_news_type_check;
 
