@@ -99,12 +99,6 @@ export async function runAgent(triggeredBy = 'manual') {
  */
 async function processArticle(article, topicId, competitorId) {
   // ── Dedup check ────────────────────────────────────────────
-  // Select existing associations too — if this article was already
-  // saved (e.g. found via a topic query) and now shows up again via
-  // a brand-specific query, we ATTACH the missing association
-  // instead of discarding it. Without this, articles never get
-  // tagged with competitor_id if a topic pass reached them first,
-  // which was making brands look like they had zero coverage.
   const { data: existing } = await db
     .from('articles')
     .select('id, topic_id, competitor_id')
