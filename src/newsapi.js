@@ -7,9 +7,7 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// Once we detect the daily quota is exhausted, stop hitting the API
-// for the rest of this process — every further call would just be
-// another wasted 403.
+// Once we detect the daily quota is exhausted, stop hitting the API for the rest of this process — every further call would just be another wasted 403.
 let quotaExhausted = false
 
 export function isQuotaExhausted() {
@@ -17,8 +15,7 @@ export function isQuotaExhausted() {
 }
 
 /**
- * Fetch articles from GNews for a given set of keywords.
- * Returns an array of raw article objects.
+ * Fetch articles from GNews for a given set of keywords. Returns an array of raw article objects.
  */
 export async function fetchArticlesForKeywords(keywords = [], maxResults = 10) {
   if (!process.env.GNEWS_API_KEY) {
