@@ -1,0 +1,179 @@
+## Segment 1 — Introduction
+
+Hi, I'm Animesh, and this is Fashion Intel — an AI-powered fashion intelligence agent I built for the Swift Robotics Node.js Developer assignment.
+
+The scope is intentionally focused on fashion brand intelligence: product launches, campaigns, discounts, earnings, brand activity, and consumer spending trends, rather than general macroeconomic news.
+
+I'll first give you a quick overview of the architecture, then demonstrate the application, explain some of the key engineering decisions I made, and finally show how I would evolve the system for production scale.
+
+---
+
+## Segment 2 — Current System Architecture
+
+At a high level, the application consists of a Node.js and Express backend, a vanilla JavaScript frontend with no build step, PostgreSQL through Supabase for persistence, GNews as the primary news source, and Groq running Llama 3.3 70B as the AI analysis layer.
+
+A node-cron scheduler automatically runs the news intelligence pipeline every six hours, and the dashboard also provides a manual trigger.
+
+[Show architecture diagram]
+
+The core pipeline works like this:
+
+For every active topic and brand, the agent fetches articles from GNews. Articles are deduplicated by URL, and only new articles are sent to the AI analysis layer.
+
+The model returns structured analysis including relevance, sentiment, news category, and whether the article is meaningful or simply noise. Low-relevance results are filtered out, while accepted articles are stored with their enrichment metadata.
+
+Looking at the system architecture in slightly more detail, the application has four main layers.
+
+The client layer contains the dashboard, brand profiles, settings, and other static pages. Every page communicates with the backend through a shared API client.
+
+The server layer contains the Express routes, validation, authentication middleware, CRUD operations, and the Agent orchestrator responsible for the news pipeline.
+
+The external services layer consists of GNews, Groq, and the logo fallback providers.
+
+Finally, the data layer uses Supabase PostgreSQL, with articles acting as the central dataset and relationships back to monitored topics and competitors.
+
+One important architectural rule is that the browser never communicates directly with Supabase, GNews, or Groq. All communication goes through the Express backend. This gives the application a single security boundary where authentication, validation, and external credentials can be managed server-side.
+
+Now I'll move to the actual application. The deployed version can also be accessed directly through the link provided in the GitHub repository.
+
+---
+
+## Segment 3 — Authentication Flow
+
+I'll start with the authentication flow.
+
+During signup, the password is hashed using bcrypt before storage, and the server issues a JWT. During login, the submitted credentials are verified and a new token is returned.
+
+Every protected API request sends the token as a Bearer token, and the authentication middleware verifies it before allowing the request to continue.
+
+[Show signup or login and enter dashboard]
+
+---
+
+## Segment 4 — Dashboard and Agent Run
+
+This is the main intelligence dashboard.
+
+At the top, there's a breaking-news ticker and a featured article section. Below that is the main article feed, which can be filtered by news type and sentiment.
+
+On the right, Brand Pulse provides a sentiment breakdown for each monitored brand.
+
+One implementation detail worth mentioning is that these statistics are calculated server-side across the complete dataset rather than only from the articles currently loaded in the browser. This keeps the analytics consistent even when the feed is filtered or paginated.
+
+Below that, the dashboard also provides consumer-signal visualization and trending topics.
+
+Now I'll trigger the agent manually.
+
+[Click Run Agent]
+
+The same pipeline normally runs automatically every six hours, but the manual trigger is useful for testing and on-demand refreshes.
+
+As the pipeline runs, the application reports progress through notifications, while the backend logs each stage of the execution.
+
+Once processing completes, newly accepted articles appear in the dashboard with their AI-generated classification, sentiment, relevance, and associated brand information.
+
+---
+
+## Segment 5 — Brand Intelligence and Search Management
+
+Clicking on a brand opens its dedicated intelligence profile.
+
+For example, here is Nike.
+
+The profile contains the brand logo, category, background information such as founding year and headquarters, relevant social links, sentiment statistics, and every accepted article associated with that brand.
+
+The application also includes a directory of roughly one hundred fashion brands.
+
+Most of them are paused by default because the current GNews free-tier quota makes monitoring all brands simultaneously impractical. The architecture supports them, but only a smaller active set is monitored during each scheduled run.
+
+The Manage Searches page controls what the agent monitors.
+
+From here, users can add or remove topics, brands, and sources.
+
+For brands, the user only needs to provide the brand name. If the brand exists in the curated brand dataset, category and search keywords are automatically populated.
+
+I intentionally simplified this workflow because requiring users to manually configure categories and keyword combinations created unnecessary friction.
+
+---
+
+## Segment 6 — Engineering Decisions
+
+There are a few engineering decisions I'd like to highlight.
+
+First, I used vanilla JavaScript rather than React for the frontend. Since this is primarily a Node.js assignment, I wanted the backend architecture, API design, data pipeline, and agent orchestration to remain the main focus of the implementation.
+
+Second, I used Zod at two boundaries: API request validation and AI response validation.
+
+The second boundary is especially important because an LLM response should be treated as untrusted input. Even when requesting JSON, the response isn't guaranteed to follow the expected structure. Validating the AI output before database insertion prevents malformed or incomplete data from silently entering the system.
+
+Third, I added structured logging using Winston.
+
+Logs are written to the console, rotating log files, and a database-backed activity log. This creates an audit trail for agent runs and makes operational activity visible inside the application rather than limiting debugging information to terminal output.
+
+For the external services, I used GNews for article discovery, Groq for fast AI inference, and Supabase for managed PostgreSQL.
+
+I also used Claude during implementation and debugging. The assignment permits AI-assisted development, and I used it primarily to accelerate implementation and troubleshooting while making sure I could explain and defend the architecture and code decisions.
+
+---
+
+## Segment 7 — Current Limitations
+
+There are a few important limitations in the current version.
+
+The biggest one is external API quotas. During testing, activating dozens of brands simultaneously quickly exhausted the GNews free-tier quota, so the deployed version intentionally monitors a smaller active set.
+
+The AI provider also has token and rate limits, which become increasingly important as the number of brands and ingestion sources grows.
+
+The current system uses scheduled polling every six hours rather than real-time event-driven ingestion.
+
+There is also no automated test suite yet; the current implementation was verified through manual testing, API testing, and log inspection.
+
+Finally, the browser currently stores JWTs in localStorage. For a production deployment, I would move session handling to secure, httpOnly cookies.
+
+These limitations directly influenced the production architecture I'm going to show next.
+
+---
+
+## Segment 8 — Production Roadmap and Scaled Architecture
+
+I divide the roadmap into immediate improvements and structural scaling changes.
+
+In the short term, I would harden deduplication across overlapping queries, add email and Slack digests, introduce RSS ingestion to reduce dependency on a single news provider, add role-based access control for administrators and analysts, move authentication to secure httpOnly cookies, and build automated integration tests around the ingestion pipeline.
+
+Longer term, I would add trend-spike detection, brand-to-brand comparison, multi-language and multi-market monitoring, cursor-based pagination, article bookmarking and archiving, and social-signal ingestion.
+
+Now let's look at how the architecture changes when the system needs to monitor many more brands, run more frequently, and support multiple teams.
+
+[Show scaled architecture diagram]
+
+There are three major structural differences from the current implementation.
+
+First, the API layer becomes stateless and horizontally scalable behind a load balancer.
+
+Second, ingestion and AI processing move completely outside the API request path into a queue-backed worker pool.
+
+This means a slow news provider, rate limit, or failed AI analysis job cannot affect dashboard availability. Workers can also scale independently from the API servers.
+
+Third, the ingestion layer expands beyond one provider. GNews, additional news APIs, RSS feeds, and eventually social-signal sources can all feed into a common normalization and deduplication pipeline.
+
+One of the most important changes is the introduction of a lightweight relevance classifier before the expensive full AI analysis stage.
+
+Instead of sending every discovered article directly to a large language model, the classifier rejects obviously irrelevant content first. Only promising articles proceed to the richer AI analysis stage for sentiment, category, relevance scoring, and structured enrichment.
+
+This directly addresses the token-cost and rate-limit bottleneck in the current implementation.
+
+The single in-process scheduler is also replaced by a distributed job queue and worker pool. This allows retries, backoff, independent scaling, failure isolation, and better observability.
+
+For monitoring, I would introduce Prometheus metrics and Grafana dashboards for ingestion latency, agent-run duration, queue depth, AI processing latency, token consumption, acceptance rate, and error rate.
+
+Finally, instead of intelligence being consumed only through the dashboard, the system can publish relevant alerts through email, Slack, or other notification channels.
+
+---
+
+## Segment 9 — Closing
+
+That's the complete walkthrough of Fashion Intel.
+
+The repository contains the complete source code, setup instructions, architecture documentation, API details, and the development roadmap.
+
+Thank you for watching. I'm happy to go deeper into the agent pipeline, backend architecture, database design, or any of the engineering decisions during the technical discussion.
