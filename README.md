@@ -120,6 +120,7 @@ The system has four layers, and the key rule is that the **browser only ever tal
 <img width="3764" height="2536" alt="Untitled-2026-03-23-2318" src="https://github.com/user-attachments/assets/e390e5b8-f1d3-48ac-86e4-23df0cc30e36" />
 
 
+
 **Request flow for a manual "Run Agent" click:**
 
 ```mermaid
@@ -166,3 +167,40 @@ sequenceDiagram
 This traces one click end-to-end: the browser sends an authenticated `POST`, the API hands off to `runAgent()`, which logs a `running` row **before** doing any work (so even a crash mid-run leaves an auditable record), then loops through every active topic and brand. For each article found, it either **links** a missing association onto an existing row (if the URL was already seen) or runs it through Groq and saves it if it clears the noise/relevance bar. The final `UPDATE` to `agent_runs` and the JSON response back to the browser happen only after every topic and brand has been processed — which is also why a run can take a couple of minutes end-to-end when many brands are active.
 
 ---
+
+## Future Enhancements
+
+### Roadmap
+
+| Phase | Timeframe | Key improvements |
+|---|---|---|
+| **Short-term** | Week 1–2 | Deduplication hardening across all query angles · Email/Slack digest notifications (Nodemailer / Slack webhooks) · RSS feed ingestion (Business of Fashion, WWD, Vogue Business) to reduce GNews dependency · Role-based access (admin vs analyst) enforced on API routes · httpOnly cookie sessions instead of `localStorage` JWT |
+| **Medium-term** | Month 1 | Trend-spike detection (alert when a brand appears in 5+ articles within 24h) · Brand-vs-brand comparison view · Multi-language / multi-market GNews queries · Cursor-based pagination for the article feed · Article bookmarking/archiving with PDF export |
+| **Long-term** | 3–6 months | Fine-tuned relevance classifier to pre-filter articles before spending Groq tokens on obviously irrelevant ones · Social signal integration (X/Twitter, Instagram mention volume) · Multi-tenant architecture (separate topic/brand lists per team) · Observability stack (Prometheus + Grafana) for run time, latency, and error-rate monitoring |
+
+### Production APIs to add
+
+| Service | Purpose | Replaces / augments |
+|---|---|---|
+| NewsAPI.org (paid tier) | Broader source coverage, higher daily quota | GNews free tier (100 req/day ceiling) |
+| Bing News Search API | Real-time indexing for breaking news | Supplements GNews |
+| SerpAPI | Google News scraping for sources GNews doesn't index | Supplements GNews |
+| Twitter/X API v2 | Social brand-mention volume and sentiment | New signal source |
+| SendGrid | Reliable transactional email for digests | New capability |
+| Groq paid tier / OpenAI fallback | Removes the 100k tokens/day ceiling | Current Groq free tier |
+
+### Known limitations of the current prototype
+
+- GNews free tier caps monitoring scale at roughly 15–20 active topics/brands per 6-hour run
+- Groq's free tier token budget can be exhausted by a single large run if too many brands are active simultaneously (see §5.9)
+- No real-time push — the scheduler polls every 6 hours rather than reacting to breaking news instantly
+- Session tokens live in `localStorage`, which is simpler but less secure than httpOnly cookies against XSS
+- No automated test suite yet — verification during development was manual + log inspection
+
+### Future System Architecture
+
+This is the same system, redrawn for a scale where the current bottleneck would actually bite in production: many more brands, more frequent runs, and multiple teams. Three structural changes distinguish it from diagram — a load-balanced, horizontally-scaled API layer instead of one process; ingestion moved out of the request path entirely into a **worker pool**; and a broader set of ingestion sources feeding into notification channels rather than only a dashboard.
+
+<img width="3602" height="3369" alt="Untitled1-2026-03-23-2318" src="https://github.com/user-attachments/assets/6de64cdb-77c0-4fe5-b8f5-a79b8dd111e1" />
+
+The key structural change from the current architecture: **a fine-tuned classifier sits in front of the expensive full AI analysis call**, so Groq/OpenAI tokens are only spent on articles that already look promising — directly addressing the token-budget limitation in §5.9 at scale. Agent runs also move from a single in-process scheduler to a **decoupled worker pool**, so a slow or failing run never blocks the API from serving dashboard requests.
