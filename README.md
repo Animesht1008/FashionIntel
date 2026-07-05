@@ -49,9 +49,9 @@ An AI-powered Node.js agent that monitors fashion brand news in real time, filte
 7. **Agent Runs** → view full history of every monitoring cycle
 8. **Activity Log** → real-time server logs stored in the database
 
-## 3. Functionalities
+##  Functionalities
 
-### 3.1 Authentication (Signup / Login)
+###  Authentication (Signup / Login)
 
 1. **Sign up** (`POST /api/auth/signup`) — user submits name, email, password. Zod validates the shape (name ≥ 2 chars, valid email, password ≥ 8 chars). The server checks for an existing account with that email, hashes the password with `bcryptjs` (12 salt rounds), inserts the user row, and returns a signed JWT (7-day expiry) plus the user object.
 2. **Log in** (`POST /api/auth/login`) — looks up the user by email, compares the submitted password against the stored hash with `bcrypt.compare`, and returns the same JWT shape on success.
@@ -59,7 +59,7 @@ An AI-powered Node.js agent that monitors fashion brand news in real time, filte
 4. `requireAuth()` runs at the top of every protected page and redirects to `/login` if no token is present; `redirectIfAuth()` does the opposite on the login page itself, so a logged-in user never sees the login form again.
 5. Every protected API route runs `authMiddleware` (`src/middleware/auth.js`), which verifies the JWT signature and expiry before the route handler executes.
 
-### 3.2 The Agent (core workflow)
+###  The Agent (core workflow)
 
 Triggered either manually (**"Run Agent"** button on the Dashboard or Agent Runs page) or automatically every 6 hours by the cron scheduler:
 
@@ -70,32 +70,32 @@ Triggered either manually (**"Run Agent"** button on the Dashboard or Agent Runs
 5. Discard noise and low-relevance results (score < 4); save everything else
 6. Log a full run summary (fetched / saved / filtered / linked counts) to `agent_runs`, viewable on the **Agent Runs** page
 
-### 3.3 Dashboard
+###  Dashboard
 
 - **Breaking ticker** — scrolling headline strip of the latest articles
 - **Hero card** — the single most relevant recent article, full-width with image
 - **Filter bar** (collapsible) — filter by news type (product launch, campaign, discount, earnings, acquisition, trend, controversy, partnership, regulation, sustainability, other) and sentiment (positive/negative/neutral)
 - **Article grid** — image-first cards with type/sentiment/brand/topic tags, AI summary, source, date, and a relevance indicator
-- **Brand Pulse** — sidebar widget showing the top brands by article volume, each with a stacked sentiment bar (green/red/grey) and logo, sourced from the server-side `/api/competitors/stats` aggregate (not a client-side slice — see §5.2)
+- **Brand Pulse** — sidebar widget showing the top brands by article volume, each with a stacked sentiment bar (green/red/grey) and logo, sourced from the server-side `/api/competitors/stats` aggregate (not a client-side slice )
 - **Consumer Signals chart** — horizontal bar chart of article volume by brand category
 - **Trending Topics** — clickable chips (brand names, topic names, and extracted proper nouns from recent headlines) linking to the relevant brand profile
 - **Recent list** — compact secondary feed
 
-### 3.4 Manage Searches (`/settings`)
+###  Manage Searches 
 
 Three independent CRUD panels — Topics, Brands/Competitors, Sources — each showing existing entries with an Active/Paused toggle and a delete button, and a form to add new ones. Only a **name** is strictly required; keywords default to the name itself, and for recognized brands the category auto-fills from the curated brand database.
 
-### 3.5 Brand Directory & Brand Profile (`/brands`, `/brand?q=...`)
+###  Brand Directory & Brand Profile
 
 - **Directory** — grid of every tracked brand with logo, category, and live article count (from the accurate server-side stats endpoint)
 - **Profile page** — logo, category, an "About" section (founding year, HQ, product category, one-paragraph bio, and clickable Website/Instagram/Facebook icons) pulled from the curated brand database, sentiment stat cards, and the full article feed for that specific brand (fetched server-side by `competitor_id`, not filtered from a capped list)
 - Reached either by clicking a brand anywhere in the app, or by typing a brand name into global search and pressing Enter
 
-### 3.6 Category Browsing (`/category?cat=...`)
+### Category Browsing 
 
 Mirrors FashionUnited's navigation taxonomy (Executive, Fashion, Retail, Business, Culture, People, Fairs, Statistics, Education) by mapping each category to a set of `news_type` values and filtering the article table accordingly.
 
-### 3.7 Agent Runs & Activity Log (localhost only)
+### Agent Runs & Activity Log (localhost only)
 
 - **Agent Runs** — full history of every run (manual or scheduled) with status, duration, and fetched/saved/filtered counts, plus a "Run Now" button
 - **Activity Log** — live-updating table of every `logger.*()` call across the whole backend, filterable by level, auto-refreshing every 30 seconds
@@ -108,9 +108,9 @@ Both are automatically hidden from the navigation when the app isn't running on 
      4. SYSTEM ARCHITECTURE
 ============================================================ -->
 
-## 4. System Architecture
+##  System Architecture
 
-The system has four layers, and the key rule is that the **browser only ever talks to the Express server** — never directly to Supabase or to the external APIs. This single-entry-point design is what lets JWT auth live in one place (`authMiddleware`) and is also why Row Level Security is safely left off (§1.1) — the database is never reachable except through code that already checked the token.
+The system has four layers, and the key rule is that the **browser only ever talks to the Express server** — never directly to Supabase or to the external APIs. This single-entry-point design is what lets JWT auth live in one place (`authMiddleware`) and is also why Row Level Security is safely left off — the database is never reachable except through code that already checked the token.
 
 - **Client** — every page (dashboard, brand profile, settings, etc.) is a static HTML file that calls the API via `api.js`
 - **Server** — Express routes validate the request, then either read/write Supabase directly (for CRUD) or hand off to the **Agent orchestrator** (for anything news-related)
@@ -163,6 +163,6 @@ sequenceDiagram
     UI-->>User: Toast + refreshed feed
 ```
 
-This traces one click end-to-end: the browser sends an authenticated `POST`, the API hands off to `runAgent()`, which logs a `running` row **before** doing any work (so even a crash mid-run leaves an auditable record), then loops through every active topic and brand. For each article found, it either **links** a missing association onto an existing row (if the URL was already seen — see §5.1) or runs it through Groq and saves it if it clears the noise/relevance bar. The final `UPDATE` to `agent_runs` and the JSON response back to the browser happen only after every topic and brand has been processed — which is also why a run can take a couple of minutes end-to-end when many brands are active.
+This traces one click end-to-end: the browser sends an authenticated `POST`, the API hands off to `runAgent()`, which logs a `running` row **before** doing any work (so even a crash mid-run leaves an auditable record), then loops through every active topic and brand. For each article found, it either **links** a missing association onto an existing row (if the URL was already seen) or runs it through Groq and saves it if it clears the noise/relevance bar. The final `UPDATE` to `agent_runs` and the JSON response back to the browser happen only after every topic and brand has been processed — which is also why a run can take a couple of minutes end-to-end when many brands are active.
 
 ---
