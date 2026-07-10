@@ -22,7 +22,7 @@ An AI-powered Node.js agent that monitors fashion brand news in real time, filte
 | Layer | Technology | Why this, and not the alternative |
 |---|---|---|
 | **Backend runtime** | Node.js + Express | The role explicitly hires for Node.js. Express keeps every request/response explicit — no hidden magic — which matters when you're asked to explain every line in a technical interview. |
-| **Frontend** | Vanilla JS + HTML + CSS (no framework) | The role is Node.js Developer, not Frontend Engineer. A build-free frontend means zero webpack/vite config to explain, and every DOM update is a plain template string. A small shared `shell.js` avoids the copy-paste-header problem without needing a component framework. |
+| **Frontend** | Vanilla JS + HTML + CSS (no framework) | As The role was Node.js Developer. A build-free frontend means zero webpack/vite config to explain, and every DOM update is a plain template string. A small shared `shell.js` avoids the copy-paste-header problem without needing a component framework. |
 | **Database** | Supabase (PostgreSQL) | Real relational structure (foreign keys between articles/topics/competitors) beats a document store here, since the linking-bug fix in §5.1 depends on relational integrity. Supabase specifically because it's free-tier friendly and gives hosted Postgres + a client SDK with zero ops. |
 | **AI** | Groq + Llama 3.3 70B | Sub-second inference per article and a generous free tier. `response_format: json_object` gives structured-output guarantees comparable to OpenAI's function calling. |
 | **News source** | GNews API | Simple REST API, workable free tier (100 req/day) for an MVP, no complex auth. |
